@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="ar" dir="rtl" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" content="#faf5e9" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#10201a" media="(prefers-color-scheme: dark)" />
+    <meta
+      name="description"
+      content="ذِكري — لحظات ذكر، وسكينة تتجدد. موقع عربي لأذكار الصباح والمساء مع مسبحة تفاعلية، ومتابعة التقدم، ومراجع موثقة."
+    />
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <title>ذِكري — أذكار الصباح والمساء</title>
+    <script>
+      // تطبيق الثيم قبل أول رسم للشاشة لتجنّب الوميض، حتى لو تعطل JavaScript الباقي.
+      (function () {
+        try {
+          var stored = localStorage.getItem("dhikri:settings:v1");
+          var theme = stored ? JSON.parse(stored).theme : null;
+          if (theme !== "light" && theme !== "dark") {
+            theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+          }
+          document.documentElement.setAttribute("data-theme", theme);
+        } catch (e) {
+          /* التخزين غير متاح — نعتمد الوضع الفاتح */
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <noscript>
+      هذا الموقع يحتاج تفعيل JavaScript ليعمل. يمكنك قراءة نصوص الأذكار بعد تفعيله من إعدادات المتصفح.
+    </noscript>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

@@ -1,0 +1,28 @@
+{
+  "name": "ذِكري — أذكار الصباح والمساء",
+  "short_name": "ذِكري",
+  "description": "لحظات ذكر، وسكينة تتجدد. أذكار الصباح والمساء مع مسبحة تفاعلية ومتابعة تقدم.",
+  "lang": "ar",
+  "dir": "rtl",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#faf5e9",
+  "theme_color": "#38654c",
+  "categories": ["lifestyle", "education"],
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "./icon-maskable.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ]
+}

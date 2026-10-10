@@ -1,0 +1,61 @@
+# ذِكري — البناء والنشر التلقائي على GitHub Pages
+#
+# يبني الموقع عند كل دفعة إلى main ثم ينشر مجلد dist/ على GitHub Pages.
+# لا حاجة لأي إعداد يدوي بعد تفعيل Pages بوضع «GitHub Actions» مرة واحدة.
+
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  # يسمح بإعادة النشر يدويًا من تبويب Actions
+  workflow_dispatch:
+
+# صلاحيات مطلوبة لـ OIDC ورفع الصفحات
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# منع تشغيل نسختين في وقت واحد (تُلغى الأقدم)
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: جلب الكود
+        uses: actions/checkout@v4
+
+      - name: تجهيز Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: تثبيت الاعتماديات
+        run: npm ci
+
+      - name: فحص الأنواع + البناء
+        run: npm run build
+
+      - name: فحص سلامة بيانات الأذكار
+        run: npm run test:data
+
+      - name: رفع ملفات البناء لعملية النشر
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: النشر على GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

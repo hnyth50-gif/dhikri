@@ -1,0 +1,434 @@
+/**
+ * اختبار تشغيل شامل للمُخرجات — `npm run test:e2e`
+ *
+ * لا يكتفي بالقول «البناء نجح»، بل يفحص ما سيصله المستخدم فعلًا:
+ *   1. يشغّل خادم المعاينة الحقيقي (`vite preview`) ويطلب الصفحات.
+ *   2. يقرأ ملفات `dist/` كما هي بعد البناء ويتحقق من محتواها.
+ *   3. يفحص التوجيه والترجمة واتجاه RTL والثيمات والوصولية في CSS.
+ *   4. يفحص المانيفست وعامل الخدمة (العمل دون اتصال).
+ *   5. يفحص أن الحزمة تحوي نصوص الأذكار الفعلية — لا نصًا وهميًا.
+ *   6. يفحص عدم وجود أسرار أو روابط غير آمنة أو `eval`.
+ *   7. يفرض حدًّا لحجم الحمولة الأولى (أداء).
+ *
+ * الاستخدام:
+ *   node scripts/e2e.mjs            # فحص كامل
+ *   node scripts/e2e.mjs --no-server  # تخطّي تشغيل الخادم (فحص ملفات فقط)
+ *
+ * الخروج برمز 1 عند أي مخالفة.
+ */
+
+import { spawn } from "node:child_process";
+import { existsSync, readFileSync, readdirSync, statSync, mkdirSync, writeFileSync } from "node:fs";
+import { gzipSync } from "node:zlib";
+import { dirname, join, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
+
+const HERE = dirname(fileURLToPath(import.meta.url));
+const ROOT = resolve(HERE, "..");
+const DIST = join(ROOT, "dist");
+const PORT = 4173;
+const BASE = `http://localhost:${PORT}`;
+const SKIP_SERVER = process.argv.includes("--no-server");
+
+const passes = [];
+const fails = [];
+const warns = [];
+const pass = (m) => passes.push(m);
+const fail = (m) => fails.push(m);
+const warn = (m) => warns.push(m);
+const assert = (cond, okMsg, failMsg) => (cond ? pass(okMsg) : fail(failMsg ?? okMsg));
+
+/* ---------------------------------------------------------------- */
+/* 0. تجهيز                                                          */
+/* ---------------------------------------------------------------- */
+
+if (!existsSync(join(DIST, "index.html"))) {
+  console.error("✗ لا يوجد `dist/` — شغّل `npm run build` أولًا.");
+  process.exit(1);
+}
+
+const read = (p) => readFileSync(p, "utf8");
+const walk = (dir) =>
+  readdirSync(dir, { withFileTypes: true }).flatMap((e) => {
+    const p = join(dir, e.name);
+    return e.isDirectory() ? walk(p) : [p];
+  });
+const files = walk(DIST);
+const gz = (buf) => gzipSync(buf, { level: 9 }).length;
+const kb = (n) => `${(n / 1024).toFixed(1)} KB`;
+
+/* ---------------------------------------------------------------- */
+/* 1. ملفات البناء                                                   */
+/* ---------------------------------------------------------------- */
+
+const html = read(join(DIST, "index.html"));
+const cssFile = files.find((f) => f.endsWith(".css"));
+const jsFiles = files.filter((f) => f.endsWith(".js") && !f.endsWith("sw.js"));
+const css = cssFile ? read(cssFile) : "";
+const js = jsFiles.map(read).join("\n");
+
+assert(html.includes('lang="ar"'), "index.html: lang=ar");
+assert(html.includes('dir="rtl"'), "index.html: dir=rtl");
+assert(html.includes("ذِكري"), "index.html: عنوان «ذِكري» موجود");
+assert(html.includes('rel="manifest"'), "index.html: مرتبط بـ manifest");
+assert(html.includes('name="description"'), "index.html: وصف meta موجود");
+assert(html.includes('name="color-scheme"'), "index.html: يعلن دعم الوضعين light/dark");
+assert(html.includes("prefers-color-scheme"), "index.html: theme-color مزدوج حسب تفضيل النظام");
+assert(html.includes("<noscript>"), "index.html: بديل لمن يعطل JavaScript");
+assert(/data-theme/.test(html), "index.html: تطبيق الثيم قبل أول رسم (منع الوميض)");
+assert(!/src="http:|href="http:/.test(html), "index.html: لا روابط غير آمنة http://");
+assert(/src="\.\/|href="\.\//.test(html), "index.html: المسارات نسبية (تعمل من أي مجلد فرعي)");
+
+/* الحمولة الأولى */
+const initial = [
+  join(DIST, "index.html"),
+  ...jsFiles,
+  ...(cssFile ? [cssFile] : []),
+];
+const initialGz = initial.reduce((n, f) => n + gz(readFileSync(f)), 0);
+assert(initialGz <= 100 * 1024, `الحمولة الأولى ${kb(initialGz)} ≤ 100 KB (مضغوطة)`);
+if (initialGz > 100 * 1024) fail(`الحمولة الأولى ${kb(initialGz)} تتجاوز 100 KB`);
+
+/* ---------------------------------------------------------------- */
+/* 2. المانيفست                                                      */
+/* ---------------------------------------------------------------- */
+
+let manifest;
+try {
+  manifest = JSON.parse(read(join(DIST, "manifest.webmanifest")));
+  pass("manifest.webmanifest: JSON صالح");
+} catch (e) {
+  fail(`manifest.webmanifest: JSON غير صالح — ${e.message}`);
+}
+if (manifest) {
+  assert(manifest.name?.includes("ذِكري"), "المانيفست: الاسم عربي «ذِكري»");
+  assert(manifest.lang === "ar" && manifest.dir === "rtl", "المانيفست: lang=ar و dir=rtl");
+  assert(manifest.display === "standalone", "المانيفست: display=standalone (تطبيق مستقل)");
+  assert(Array.isArray(manifest.icons) && manifest.icons.length >= 2, "المانيفست: أيقونتان على الأقل");
+  assert(manifest.start_url && manifest.scope, "المانيفست: start_url و scope محدّدان");
+  for (const icon of manifest.icons ?? []) {
+    const p = join(DIST, icon.src.replace("./", ""));
+    assert(existsSync(p), `المانيفست: الأيقونة موجودة فعليًا (${icon.src})`);
+  }
+}
+
+/* ---------------------------------------------------------------- */
+/* 3. عامل الخدمة                                                    */
+/* ---------------------------------------------------------------- */
+
+const swPath = join(DIST, "sw.js");
+assert(existsSync(swPath), "sw.js: موجود في البناء");
+if (existsSync(swPath)) {
+  const sw = read(swPath);
+  assert(sw.includes('addEventListener("install"'), "sw.js: معالج تثبيت");
+  assert(sw.includes('addEventListener("activate"'), "sw.js: معالج تفعيل وتنظيف الإصدارات القديمة");
+  assert(sw.includes('addEventListener("fetch"'), "sw.js: معالج طلبات");
+  assert(sw.includes("index.html"), "sw.js: يخزّن index.html ليعمل دون اتصال");
+  assert(/network-first|fetch\(request\)/.test(sw), "sw.js: التنقّل شبكة أولًا حتى لا تُعرض نسخة قديمة");
+  assert(sw.includes("!response.ok"), "sw.js: أخطاء الخادم (502...) تعود للنسخة المخزّنة بدل عرض الخطأ");
+  assert(sw.includes("ignoreSearch"), "sw.js: يطابق الصفحات المخزّنة مع تجاهل المعلّمات (?q=)");
+  assert(sw.includes("ignoreVary"), "sw.js: يتجاهل Vary عند إعادة التحميل حتى لا يفشل المطابق");
+  assert(sw.includes("PRECACHE_ASSETS"), "sw.js: يستقبل قائمة ملفات البناء للتخزين المسبق");
+  assert(sw.includes("url.origin !== self.location.origin"), "sw.js: يتجاهل النطاقات الخارجية");
+  assert(!/eval\(/.test(sw), "sw.js: بلا eval");
+  assert(js.includes("serviceWorker"), "الحزمة: تسجيل عامل الخدمة");
+  assert(
+    /serviceWorker\.register\(\s*"\.\/sw\.js"/.test(js),
+    "الحزمة: يسجّل عامل الخدمة بمسار نسبي إلى الصفحة (./sw.js)",
+    "الحزمة: مسار تسجيل عامل الخدمة غير صالح — كان يُسجّل من assets/ ويفشل بصمت"
+  );
+  assert(!/new URL\("sw\.js"/.test(js), "الحزمة: لا يبني مسار عامل الخدمة من import.meta.url");
+}
+
+/* ---------------------------------------------------------------- */
+/* 4. المحتوى                                                        */
+/* ---------------------------------------------------------------- */
+
+const mustHave = [
+  ["أذكار الصباح", "عنوان قسم الصباح"],
+  ["أذكار المساء", "عنوان قسم المساء"],
+  ["المفضلة", "ميزة المفضلة"],
+  ["الإعدادات", "صفحة الإعدادات"],
+  ["المصادر", "صفحة المصادر والمراجعة"],
+  ["حجم الخط", "التحكم بحجم الخط"],
+  ["مشاركة", "زر المشاركة"],
+  ["استمع", "زر الاستماع"],
+  ["العدد الحالي", "قراءة العدّاد"],
+  ["اكتمل التكرار", "مؤشر اكتمال التكرار"],
+  ["أتصفّر العدّاد", "تأكيد تصفير العدّاد"],
+  ['role="progressbar"', "شريط تقدّم بـ ARIA"],
+  ["prefers-color-scheme", "استجابة لتفضيل نظام التشغيل"],
+];
+for (const [needle, label] of mustHave)
+  assert(
+    needle === 'role="progressbar"' ? js.includes("progressbar") : js.includes(needle),
+    `الحزمة: ${label} («${needle}») موجود`
+  );
+
+/* --- النصوص: تُقرأ من ملف البيانات نفسه، فلو حُرِّف أو قُصّ فشل الاختبار --- */
+try {
+  const { buildSync } = await import("esbuild");
+  const { pathToFileURL } = await import("node:url");
+  const { mkdtempSync: mkTmp } = await import("node:fs");
+  const { tmpdir } = await import("node:os");
+  const outFile = join(mkTmp(join(tmpdir(), "dhikri-e2e-")), "data.mjs");
+  buildSync({
+    entryPoints: [join(ROOT, "src/data/adhkar.ts")],
+    bundle: true,
+    format: "esm",
+    platform: "neutral",
+    outfile: outFile,
+    logLevel: "silent",
+  });
+  const data = await import(pathToFileURL(outFile).href);
+
+  let checked = 0;
+  let broken = 0;
+  for (const d of data.DHKAR) {
+    const samples = [
+      ["النص الأساسي", d.text],
+      ["صيغة المساء", d.eveningText],
+      ["العنوان", d.title],
+      ["الفضيلة", d.virtue],
+      ["صياغة العدد", d.countLabel],
+      ["صياغة عدد المساء", d.eveningCountLabel],
+    ].filter(([, v]) => typeof v === "string" && v.trim().length > 0);
+    for (const [what, value] of samples) {
+      checked++;
+      if (!js.includes(value)) {
+        broken++;
+        fail(`الحزمة: ${what} لذكر «${d.id}» غير مطابق حرفيًا لملف البيانات`);
+      }
+    }
+  }
+  if (broken === 0)
+    pass(`كل نصوص الأذكار وعناوينها وأعدادها موجودة حرفيًا في الحزمة (${checked} نصًا من ${data.DHKAR.length} ذكرًا)`);
+} catch (e) {
+  fail(`تعذّر التحقق من نصوص الأذكار في الحزمة — ${e.message}`);
+}
+
+/* ---------------------------------------------------------------- */
+/* 5. الأمان والنظافة                                                */
+/* ---------------------------------------------------------------- */
+
+const secretPatterns = [
+  [/\bapi[_-]?key\b/i, "api key"],
+  [/-----BEGIN [A-Z ]*PRIVATE KEY-----/, "مفتاح خاص"],
+  [/\bBearer\s+[A-Za-z0-9._-]{20,}/, "توكن Bearer"],
+  [/["']password["']\s*:\s*["'][^"']{4,}/, "كلمة مرور مخزّنة"],
+  [/ghp_[A-Za-z0-9]{20,}/, "GitHub token"],
+  [/AIza[0-9A-Za-z_-]{30,}/, "Google API key"],
+];
+for (const [re, label] of secretPatterns)
+  assert(!re.test(js) && !re.test(html) && !re.test(css), `لا يوجد ${label} في الكود المنشور`);
+
+assert(!/\beval\s*\(/.test(js), "الحزمة: بلا eval()");
+assert(!/new\s+Function\s*\(/.test(js), "الحزمة: بلا new Function()");
+
+/* الروابط الخارجية في الحزمة: نسمح فقط بنطاقات معلنة ومعلومة */
+const external = [...new Set((js.match(/https?:\/\/[a-z0-9.-]+\.[a-z]{2,}/gi) ?? []))];
+// w3.org = مساحات الأسماء في وسوم SVG (لا يُطلب من الشبكة أبدًا)
+// reactjs.org = رابط مشروح أخطاء React داخل رسائل التصحيح
+const allowed = [
+  /sunnah\.com$/,
+  /hisnmuslim\.com$/,
+  /api\.alquran\.cloud$/,
+  /w3\.org$/,
+  /reactjs\.org$/,
+  /react\.dev$/,
+];
+const unexpected = external.filter((u) => !allowed.some((re) => re.test(u.replace(/^https?:\/\//, ""))));
+assert(
+  unexpected.length === 0,
+  `الروابط الخارجية محصورة في المصادر المعلنة (${external.length} نطاقًا)`,
+  `روابط خارجية غير معلنة: ${unexpected.join(", ")}`
+);
+const insecure = external.filter(
+  (u) => u.startsWith("http://") && !/w3\.org/.test(u)
+);
+assert(insecure.length === 0, "كل الروابط الخارجية عبر https", `روابط http غير آمنة: ${insecure.join(", ")}`);
+
+/* لا نداء لأي API خارجي — لا قاعدة بيانات ولا خدمة مدفوعة */
+for (const banned of ["XMLHttpRequest", "navigator.sendBeacon", "WebSocket("]) {
+  assert(!js.includes(banned), `الحزمة: بلا ${banned}`);
+}
+const externalFetch = (js.match(/fetch\(\s*["'`]https?:\/\/[^"'`]+/g) ?? []).length;
+assert(externalFetch === 0, "الحزمة: لا fetch مباشر إلى أي خدمة خارجية");
+
+/* ---------------------------------------------------------------- */
+/* 6. CSS — RTL والثيمات والوصولية                                   */
+/* ---------------------------------------------------------------- */
+
+assert(css.includes("data-theme"), "CSS: ثيمات data-theme مطبّقة");
+assert(/\[data-theme=["']?dark["']?\]/.test(css), "CSS: ألوان الوضع الليلي موجودة");
+assert(css.includes("prefers-reduced-motion"), "CSS: يحترم تقليل الحركة");
+assert(
+  /margin-inline|padding-inline|inset-inline|border-inline|Inline(Start|End)/.test(css + js),
+  "CSS/JS: خصائص منطقية (inline) تدعم RTL بدل left/right"
+);
+assert(
+  !/text-align:\s*(left|right)/.test(css),
+  "CSS: لا محاذاة حرفية left/right تُفسد اتجاه RTL"
+);
+assert(css.includes("min-width") || css.includes("max-width"), "CSS: نقاط تكيّف للشاشات المختلفة");
+assert(
+  css.includes("data-font-scale") && css.includes("--scale-dhikr"),
+  "CSS: نظام حجم خط قابل للتحكّم (خمسة مستويات)"
+);
+assert(css.includes(":focus-visible") || css.includes(":focus"), "CSS: أسلوب تركيز واضح للوحة المفاتيح");
+assert(/sr-only/.test(css), "CSS: فئة قراءة للقارئ الشاشي دون إظهارها بصريًا");
+assert(/@media print/.test(css), "CSS: تنسيق طباعة منفصل عن الشاشة");
+
+/* ---------------------------------------------------------------- */
+/* 7. كل ملفات الأصول تُقرأ كما هي                                  */
+/* ---------------------------------------------------------------- */
+
+let missing = 0;
+for (const f of files) {
+  const rel = f.slice(DIST.length + 1).replaceAll("\\", "/");
+  if (rel.endsWith(".html") || rel.endsWith(".txt")) continue;
+  try {
+    statSync(f);
+  } catch {
+    missing++;
+    fail(`ملف مفقود بعد البناء: ${rel}`);
+  }
+}
+if (missing === 0) pass(`كل ملفات dist (${files.length} ملفًا) قابلة للقراءة`);
+
+/* أسماء الملفات لا تحوي أسرارًا أو أسماء مستخدمين */
+const badNames = files.filter((f) => /(password|secret|token|\.env)/i.test(f));
+assert(badNames.length === 0, "أسماء الملفات نظيفة", `أسماء مشبوهة: ${badNames.join(", ")}`);
+
+/* ---------------------------------------------------------------- */
+/* 8. الخادم الحقيقي                                                 */
+/* ---------------------------------------------------------------- */
+
+let child = null;
+
+async function serverUp() {
+  try {
+    const res = await fetch(`${BASE}/`, { signal: AbortSignal.timeout(1500) });
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+
+async function waitForServer(ms = 20000) {
+  const end = Date.now() + ms;
+  while (Date.now() < end) {
+    if (await serverUp()) return true;
+    await new Promise((r) => setTimeout(r, 300));
+  }
+  return false;
+}
+
+if (!SKIP_SERVER) {
+  if (await serverUp()) {
+    pass(`خادم المعاينة يعمل بالفعل على ${BASE} — أُعيد استخدامه`);
+  } else {
+    const viteBin = join(ROOT, "node_modules", "vite", "bin", "vite.js");
+    child = spawn(process.execPath, [viteBin, "preview", "--port", String(PORT), "--strictPort"], {
+      cwd: ROOT,
+      stdio: "ignore",
+      detached: false,
+    });
+    if (await waitForServer()) pass(`شُغّل خادم المعاينة الحقيقي على ${BASE}`);
+    else fail("خادم المعاينة لم يستجب خلال 20 ثانية");
+  }
+} else {
+  warn("تخطّي تشغيل الخادم (--no-server)");
+}
+
+if (await serverUp()) {
+  const checks = [
+    ["/", "الصفحة الرئيسية"],
+    ["/index.html", "index.html المباشر"],
+    ["/manifest.webmanifest", "المانيفست عبر الخادم"],
+    ["/sw.js", "عامل الخدمة عبر الخادم"],
+    ["/robots.txt", "robots.txt"],
+  ];
+  for (const [path, label] of checks) {
+    try {
+      const res = await fetch(BASE + path);
+      assert(res.ok, `${label}: ${res.status}`);
+      if (path === "/") {
+        const body = await res.text();
+        assert(body.includes('dir="rtl"'), `${label}: يستجيب بـ dir=rtl`);
+        assert(/type="module"/.test(body), `${label}: يشغّل وحدة ES`);
+      }
+    } catch (e) {
+      fail(`${label}: تعذّر الاتصال — ${e.message}`);
+    }
+  }
+
+  /* كل أصول المسارات النسبية */
+  const relAssets = [...html.matchAll(/(?:src|href)="(\.\/[^"]+)"/g)].map((m) => m[1]);
+  for (const a of relAssets) {
+    try {
+      const res = await fetch(`${BASE}/${a.replace(/^\.\//, "")}`);
+      assert(res.ok, `الأصل «${a}» يستجيب ${res.status}`);
+    } catch (e) {
+      fail(`الأصل «${a}» — ${e.message}`);
+    }
+  }
+
+  /* عامل الخدمة لا يُحجب */
+  try {
+    const res = await fetch(`${BASE}/sw.js`, { headers: { "Service-Worker-Script": "1" } });
+    assert(res.ok, `sw.js يُقدَّم بحالة ${res.status}`);
+    assert(
+      (res.headers.get("content-type") ?? "").includes("javascript"),
+      "sw.js بنوع محتوى javascript"
+    );
+  } catch (e) {
+    fail(`sw.js — ${e.message}`);
+  }
+}
+
+/* ---------------------------------------------------------------- */
+/* 9. التقرير                                                        */
+/* ---------------------------------------------------------------- */
+
+if (child) {
+  try {
+    child.kill();
+  } catch {
+    /* تجاهل */
+  }
+}
+
+const W = 64;
+console.log("\n" + "─".repeat(W));
+console.log("  اختبار التشغيل الشامل — npm run test:e2e");
+console.log("─".repeat(W));
+for (const p of passes) console.log("  ✓ " + p);
+for (const w of warns) console.log("  ! " + w);
+for (const f of fails) console.log("  ✗ " + f);
+console.log("─".repeat(W));
+console.log(
+  fails.length === 0
+    ? `  نجح الاختبار: ${passes.length} فحصًا، ${warns.length} تنبيهًا، 0 فشل.`
+    : `  فشل الاختبار: ${fails.length} مخالفة، ${passes.length} فحصًا ناجحًا.`
+);
+console.log("─".repeat(W) + "\n");
+
+mkdirSync(join(ROOT, "docs"), { recursive: true });
+writeFileSync(
+  join(ROOT, "docs", "e2e-latest.txt"),
+  [
+    `date: ${new Date().toISOString()}`,
+    `passed: ${passes.length}`,
+    `warnings: ${warns.length}`,
+    `failed: ${fails.length}`,
+    "",
+    ...passes.map((p) => "[PASS] " + p),
+    ...warns.map((w) => "[WARN] " + w),
+    ...fails.map((f) => "[FAIL] " + f),
+    "",
+  ].join("\n"),
+  "utf8"
+);
+
+process.exit(fails.length === 0 ? 0 : 1);

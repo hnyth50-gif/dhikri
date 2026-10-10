@@ -1,0 +1,11 @@
+# توحيد نهايات الأسطر: LF في المستودع (يبني على Linux في GitHub Actions)
+* text=auto eol=lf
+
+# ملفات ثنائية لا تُعدَّل
+*.png binary
+*.jpg binary
+*.webp binary
+*.ico binary
+*.woff binary
+*.woff2 binary
+*.mp3 binary

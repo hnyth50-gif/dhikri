@@ -1,0 +1,405 @@
+@import "@fontsource/amiri/400.css";
+@import "@fontsource/amiri/700.css";
+@import "@fontsource/cairo/400.css";
+@import "@fontsource/cairo/600.css";
+@import "@fontsource/cairo/700.css";
+@import "@fontsource/noto-naskh-arabic/400.css";
+@import "@fontsource/noto-naskh-arabic/700.css";
+@import "@fontsource/ibm-plex-sans-arabic/400.css";
+@import "@fontsource/ibm-plex-sans-arabic/600.css";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ==================================================================
+   الهوية البصرية
+   أخضر المريمية أساسي — زيتوني للتفاعل — عاجي فاتح — ذهبي للزينة
+   ================================================================== */
+
+:root {
+  color-scheme: light;
+
+  /* خلفيات */
+  --bg: #faf5e9;
+  --bg-soft: #f4eddc;
+  --surface: #fffdf7;
+  --surface-2: #f7f1e2;
+  --surface-hover: #f2ebd9;
+
+  /* نصوص — تباين محسوب ليعبر معيار WCAG AA */
+  --text: #1c2a22;
+  --text-soft: #4a5b50;
+  --text-faint: #6d7d72;
+
+  /* أخضر المريمية */
+  --primary: #2e513e;
+  --primary-strong: #23402f;
+  --primary-soft: #e2ece4;
+  --primary-line: #c6d8cb;
+
+  /* الأخضر الزيتوني — التفاعل */
+  --accent: #647033;
+  --accent-strong: #4c572a;
+  --accent-soft: #eef1dd;
+  --on-accent: #fdfbf5;
+
+  /* الذهبي الهادئ — زينة محدودة */
+  --gold: #b8933f;
+  --gold-soft: #f3e8cf;
+
+  --border: #e3d9c2;
+  --border-strong: #d2c5a6;
+  --ring: #38654c;
+
+  --shadow-card: 0 1px 2px rgba(28, 42, 34, 0.04), 0 10px 26px -18px rgba(28, 42, 34, 0.4);
+  --shadow-lift: 0 2px 6px rgba(28, 42, 34, 0.06), 0 22px 44px -26px rgba(28, 42, 34, 0.5);
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  --bg: #10201a;
+  --bg-soft: #16281f;
+  --surface: #18291f;
+  --surface-2: #1e3327;
+  --surface-hover: #24392d;
+
+  --text: #e9f0ea;
+  --text-soft: #b3c3b8;
+  --text-faint: #8a9c90;
+
+  --primary: #9cc4a8;
+  --primary-strong: #bcdac5;
+  --primary-soft: #1e3327;
+  --primary-line: #2c4536;
+
+  --accent: #b3c47a;
+  --accent-strong: #c9d79a;
+  --accent-soft: #22321f;
+  --on-accent: #14200f;
+
+  --gold: #d9c184;
+  --gold-soft: #2a2a1a;
+
+  --border: #2b4133;
+  --border-strong: #38503f;
+  --ring: #9cc4a8;
+
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.3), 0 12px 28px -18px rgba(0, 0, 0, 0.8);
+  --shadow-lift: 0 2px 8px rgba(0, 0, 0, 0.35), 0 24px 48px -28px rgba(0, 0, 0, 0.9);
+}
+
+/* ==================================================================
+   أحجام الخط — خمس درجات، تُحدَّث فورًا ودون إعادة تحميل
+   ================================================================== */
+
+:root {
+  --scale-dhikr: 1.35rem;
+  --scale-ui: 1rem;
+  --lh-dhikr: 2.35;
+}
+
+[data-font-scale="1"] {
+  --scale-dhikr: 1.1rem;
+  --scale-ui: 0.9rem;
+  --lh-dhikr: 2.15;
+}
+[data-font-scale="2"] {
+  --scale-dhikr: 1.22rem;
+  --scale-ui: 0.95rem;
+  --lh-dhikr: 2.25;
+}
+[data-font-scale="3"] {
+  --scale-dhikr: 1.35rem;
+  --scale-ui: 1rem;
+  --lh-dhikr: 2.35;
+}
+[data-font-scale="4"] {
+  --scale-dhikr: 1.55rem;
+  --scale-ui: 1.08rem;
+  --lh-dhikr: 2.5;
+}
+[data-font-scale="5"] {
+  --scale-dhikr: 1.8rem;
+  --scale-ui: 1.18rem;
+  --lh-dhikr: 2.65;
+}
+
+/* ==================================================================
+   اختيار الخط — الخط الأساسي لنصوص الأذكار ثم خط الواجهة
+   ================================================================== */
+
+[data-font="naskh"] {
+  --font-dhikr: "Amiri", "Noto Naskh Arabic", serif;
+  --font-ui: "Cairo", system-ui, sans-serif;
+}
+[data-font="naskh-noto"] {
+  --font-dhikr: "Noto Naskh Arabic", "Amiri", serif;
+  --font-ui: "Cairo", system-ui, sans-serif;
+}
+[data-font="kufi"] {
+  --font-dhikr: "IBM Plex Sans Arabic", "Cairo", sans-serif;
+  --font-ui: "IBM Plex Sans Arabic", "Cairo", sans-serif;
+}
+[data-font="cairo"] {
+  --font-dhikr: "Cairo", "Noto Naskh Arabic", sans-serif;
+  --font-ui: "Cairo", system-ui, sans-serif;
+}
+
+/* ==================================================================
+   الأساس
+   ================================================================== */
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    margin: 0;
+    background-color: var(--bg);
+    color: var(--text);
+    font-family: var(--font-ui);
+    font-size: var(--scale-ui);
+    line-height: 1.75;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    transition: background-color 0.25s ease, color 0.25s ease;
+  }
+
+  /* نحترم إعداد «تقليل الحركة» في الجهاز */
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.001ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.001ms !important;
+    }
+  }
+
+  /* المستخدم اختار تقليل الحركة يدويًا من الإعدادات */
+  [data-motion="reduced"] *,
+  [data-motion="reduced"] *::before,
+  [data-motion="reduced"] *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+
+  :focus-visible {
+    outline: 3px solid var(--ring);
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
+
+  button {
+    font: inherit;
+    color: inherit;
+  }
+
+  h1,
+  h2,
+  h3 {
+    line-height: 1.35;
+    font-weight: 700;
+  }
+
+  /* منع قص النصوص العربية عند التكبير */
+  p,
+  span,
+  div {
+    overflow-wrap: anywhere;
+  }
+}
+
+/* ==================================================================
+   النص الشرعي
+   ================================================================== */
+
+.dhikr-text {
+  font-family: var(--font-dhikr);
+  font-size: var(--scale-dhikr);
+  line-height: var(--lh-dhikr);
+  letter-spacing: 0;
+  text-align: justify;
+  text-justify: inter-word;
+  color: var(--text);
+}
+
+.quran-text {
+  font-family: var(--font-dhikr);
+  font-size: var(--scale-dhikr);
+  line-height: var(--lh-dhikr);
+  text-align: center;
+  color: var(--text);
+}
+
+/* ==================================================================
+   المكوّنات
+   ================================================================== */
+
+@layer components {
+  .surface {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 1.25rem;
+    box-shadow: var(--shadow-card);
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.45rem;
+    min-height: 2.75rem;
+    padding: 0.5rem 1rem;
+    border-radius: 0.9rem;
+    border: 1px solid transparent;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: background-color 0.18s ease, border-color 0.18s ease, transform 0.1s ease;
+    user-select: none;
+  }
+  .btn:active {
+    transform: scale(0.975);
+  }
+  .btn-primary {
+    background: var(--accent);
+    color: var(--on-accent);
+  }
+  .btn-primary:hover {
+    background: var(--accent-strong);
+  }
+  .btn-ghost {
+    background: var(--surface-2);
+    color: var(--text);
+    border-color: var(--border);
+  }
+  .btn-ghost:hover {
+    background: var(--surface-hover);
+    border-color: var(--border-strong);
+  }
+  .btn-danger {
+    background: transparent;
+    color: #a4372e;
+    border-color: #d8a9a4;
+  }
+  .btn-danger:hover {
+    background: #f7e6e4;
+  }
+  [data-theme="dark"] .btn-danger {
+    color: #ef9d95;
+    border-color: #6b3a35;
+  }
+  [data-theme="dark"] .btn-danger:hover {
+    background: #33211f;
+  }
+
+  /* زر دائري كبير مناسب للإبهام على الهاتف */
+  .tap {
+    min-width: 3.25rem;
+    min-height: 3.25rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: var(--surface-2);
+    color: var(--text-soft);
+    cursor: pointer;
+    transition: background-color 0.16s ease, color 0.16s ease, transform 0.08s ease;
+  }
+  .tap:hover {
+    background: var(--surface-hover);
+    color: var(--text);
+  }
+  .tap:active {
+    transform: scale(0.93);
+  }
+  .tap[aria-pressed="true"] {
+    background: var(--accent-soft);
+    color: var(--accent-strong);
+    border-color: var(--accent);
+  }
+
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.15rem 0.6rem;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    line-height: 1.6;
+  }
+
+  /* زخرفة هندسية إسلامية دقيقة — نمط ثمانية مجوّف بخط رفيع */
+  .pattern {
+    background-image: radial-gradient(circle at center, var(--primary-line) 1px, transparent 1.2px);
+    background-size: 22px 22px;
+    opacity: 0.5;
+  }
+}
+
+/* شريط تقدّم رفيع بلون زيتوني */
+.progress-track {
+  background: var(--surface-2);
+  border-radius: 999px;
+  overflow: hidden;
+  height: 0.5rem;
+  border: 1px solid var(--border);
+}
+.progress-fill {
+  background: var(--accent);
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* حلقة إنجاز SVG */
+.ring-track {
+  stroke: var(--surface-2);
+}
+.ring-fill {
+  stroke: var(--gold);
+  transition: stroke-dashoffset 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* شريط تنقل سفلي — مناسب للاستخدام بيد واحدة */
+.bottom-nav {
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
+  backdrop-filter: blur(14px);
+  border-top: 1px solid var(--border);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+@supports not (backdrop-filter: blur(1px)) {
+  .bottom-nav {
+    background: var(--surface);
+  }
+}
+
+/* منع الوميض: نخفي المحتوى حتى يُطبَّق الثيم */
+#root {
+  min-height: 100dvh;
+}
+
+/* شارة تنبيه المراجعة — غير معتمدة على اللون وحده */
+.badge-review {
+  border: 1px solid var(--gold);
+  background: var(--gold-soft);
+  color: var(--text);
+}
+
+/* سجل طباعة بسيط */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+}
