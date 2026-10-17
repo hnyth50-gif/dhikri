@@ -132,6 +132,16 @@ export const CloseIcon = (p: P) => (
   </svg>
 );
 
+/** شبكة رباعية — رمز «المزيد» في شريط التنقل السفلي */
+export const MenuIcon = (p: P) => (
+  <svg {...base(p)}>
+    <rect x="3.5" y="3.5" width="7" height="7" rx="2" />
+    <rect x="13.5" y="3.5" width="7" height="7" rx="2" />
+    <rect x="3.5" y="13.5" width="7" height="7" rx="2" />
+    <rect x="13.5" y="13.5" width="7" height="7" rx="2" />
+  </svg>
+);
+
 export const ChevronIcon = (p: P) => (
   <svg {...base(p)}>
     <path d="m9 5 7 7-7 7" />

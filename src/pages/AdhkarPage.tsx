@@ -1,10 +1,10 @@
 import { useEffect } from "react";
-import { SECTIONS } from "../data/adhkar";
+import { SECTIONS, findDhikr } from "../data/adhkar";
 import { useApp } from "../state/AppContext";
 import DhikrCard from "../components/DhikrCard";
 import ProgressRing from "../components/ProgressRing";
 import { MinusIcon, PlusIcon, SettingsIcon } from "../components/Icons";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 
 interface Props {
   section: "morning" | "evening";
@@ -14,6 +14,8 @@ export default function AdhkarPage({ section }: Props) {
   const app = useApp();
   const data = SECTIONS[section];
   const progress = app.sectionProgress(section);
+  const [params] = useSearchParams();
+  const focus = params.get("focus");
 
   useEffect(() => {
     document.title = `${data.title} — ذِكري`;
@@ -21,6 +23,35 @@ export default function AdhkarPage({ section }: Props) {
       document.title = "ذِكري — أذكار الصباح والمساء";
     };
   }, [data.title]);
+
+  /**
+   * دعم روابط «عد إلى موضعه»: لو فتحت الصفحة بـ `?focus=id` نُمرّ على
+   * البطاقة وننقل التركيز إليها. لا نفعل شيئًا إن لم يكن الذكر في هذا
+   * القسم (روابط المفضلة تشير إلى القسم الصحيح دائمًا).
+   */
+  useEffect(() => {
+    if (!focus) return;
+    const dhikr = findDhikr(focus);
+    if (!dhikr) return;
+    const inSection = (section === "morning" ? ["morning", "both"] : ["evening", "both"]).includes(dhikr.time);
+    if (!inSection) return;
+
+    const el = document.getElementById(`dhikr-${focus}`);
+    if (!el) return;
+    const reduced =
+      typeof window.matchMedia === "function" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    el.scrollIntoView({ block: "start", behavior: reduced ? "auto" : "smooth" });
+    el.setAttribute("tabindex", "-1");
+    el.focus({ preventScroll: true });
+    // إطار إشارة مؤقّت لا يعتمد على الحركة — يوضّح أي بطاقة فُتحت منها
+    el.style.outline = "3px solid var(--ring)";
+    el.style.outlineOffset = "4px";
+    const t = window.setTimeout(() => {
+      el.style.outline = "";
+      el.style.outlineOffset = "";
+    }, 2600);
+    return () => window.clearTimeout(t);
+  }, [focus, section]);
 
   return (
     <div className="space-y-4">

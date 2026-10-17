@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { DHKAR, unconfirmedNumbers } from "../data/adhkar";
+import { usePageTitle } from "../components/ContentPage";
 import { BookIcon, ChevronIcon, CloseIcon, CheckIcon } from "../components/Icons";
 
 /**
@@ -11,6 +12,7 @@ import { BookIcon, ChevronIcon, CloseIcon, CheckIcon } from "../components/Icons
 export default function SourcesPage() {
   const [filter, setFilter] = useState<"all" | "verified" | "review">("all");
   const unconfirmed = unconfirmedNumbers();
+  usePageTitle("المراجع وحالة التحقق");
 
   const verifiedCount = DHKAR.filter((d) => d.verification === "verified-source").length;
   const reviewCount = DHKAR.length - verifiedCount;

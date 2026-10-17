@@ -1,6 +1,8 @@
 import { Link } from "react-router-dom";
+import { usePageTitle } from "../components/ContentPage";
 
 export default function NotFound() {
+  usePageTitle("صفحة غير موجودة");
   return (
     <div className="surface mx-auto max-w-md p-8 text-center">
       <p className="mb-2 text-5xl font-bold" style={{ color: "var(--primary)" }}>

@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { getAdhkar, normalize, searchAdhkar, textFor } from "../data/adhkar";
 import type { Dhikr } from "../data/types";
+import { usePageTitle } from "../components/ContentPage";
 import { useApp } from "../state/AppContext";
 import { useToast } from "../components/Toast";
 import { ChevronIcon, CloseIcon, HeartIcon, SearchIcon } from "../components/Icons";
@@ -15,6 +16,7 @@ export default function SearchPage() {
   const tab: Tab = params.get("tab") === "favorites" ? "favorites" : "search";
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<Filter>("all");
+  usePageTitle("البحث والمفضلة");
 
   const results = useMemo(() => searchAdhkar(query), [query]);
   // معرّفات المفضّلة تقرأ من التخزين، لا نعرض كل الأذكار على أنها محفوظة

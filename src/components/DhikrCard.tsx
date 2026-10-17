@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from "react";
+import { Link } from "react-router-dom";
 import { textFor } from "../data/adhkar";
 import type { Dhikr } from "../data/types";
+import { copyToClipboard } from "../lib/clipboard";
 import { useApp } from "../state/AppContext";
 import { useToast } from "./Toast";
 import {
@@ -20,38 +22,6 @@ interface Props {
   section: "morning" | "evening";
 }
 
-/**
- * النسخ إلى الحافظة بسلسلة بدائل حقيقية، لا برسالة نجاح وهمية.
- * 1) Clipboard API الحديث — أول اختيار.
- * 2) الطريقة القديمة عبر textarea + execCommand — تعمل حين تُرفض صلاحية
- *    الحافظة (كما يحدث في النوافذ الآلية أو عند منع الإذن)، ويكفيها إشارة
- *    فعلية من المستخدم (نقرة أو مفتاح).
- * تُعيد true فقط إذا تأكّد النسخ فعلًا.
- */
-async function copyToClipboard(text: string): Promise<boolean> {
-  try {
-    await navigator.clipboard.writeText(text);
-    return true;
-  } catch {
-    /* لا نتسرّع في القول إن النسخ فشل — نجرّب البديل */
-  }
-  try {
-    const ta = document.createElement("textarea");
-    ta.value = text;
-    ta.setAttribute("readonly", "");
-    ta.style.position = "fixed";
-    ta.style.top = "-1000px";
-    ta.style.opacity = "0";
-    document.body.appendChild(ta);
-    ta.select();
-    ta.setSelectionRange(0, ta.value.length);
-    const ok = document.execCommand("copy");
-    document.body.removeChild(ta);
-    return ok;
-  } catch {
-    return false;
-  }
-}
 
 /**
  * بطاقة ذكر واحدة.
@@ -468,6 +438,14 @@ function SourcePanel({ dhikr }: { dhikr: Dhikr }) {
       <p className="mt-3 text-xs leading-relaxed" style={{ color: "var(--text-faint)" }}>
         <strong>حالة التحقق:</strong> {dhikr.verificationNote}
       </p>
+      {/* رابط التصحيح: يفتح نموذج التواصل مع تحديد هذا الذكر ونوعه معبّأين مسبقًا */}
+      <Link
+        to={`/contact?kind=text-error&dhikr=${dhikr.id}`}
+        className="mt-2 inline-block text-xs underline"
+        style={{ color: "var(--accent-strong)" }}
+      >
+        أبلغ عن خطأ في هذا النص أو مصدره
+      </Link>
     </div>
   );
 }
