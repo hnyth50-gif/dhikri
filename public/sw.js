@@ -39,10 +39,15 @@ self.addEventListener("activate", (event) => {
 self.addEventListener("message", (event) => {
   // يسمح للواجهة بإبلاغنا بقائمة ملفات البناء الحقيقية بعد التحميل.
   if (event.data && event.data.type === "PRECACHE_ASSETS" && Array.isArray(event.data.urls)) {
+    // نضيف وثيقة الصفحة نفسها إلى القائمة: اسمها لا يتغيّر بين الإصدارات،
+    // فلو بقيت نسخة قديمة منها في الذاكرة لأُشغِّل الموقع القديم دون اتصال
+    // بعد النشر (ومن صفحاته الجديدة تبدو «غير موجودة»). الرسالة تأتي من
+    // صفحة حديثة التحميل من الشبكة، فالتقاط الوثيقة هنا يحدّثها فعليًا.
+    const urls = [...event.data.urls, "./", "./index.html"];
     event.waitUntil(
       caches.open(ASSETS_CACHE).then((cache) =>
         // نضيف كل ملف على حدة حتى لا يفشل البناء كاملًا لو تعذّر ملف واحد.
-        Promise.allSettled(event.data.urls.map((url) => cache.add(url).catch(() => undefined)))
+        Promise.allSettled(urls.map((url) => cache.add(url).catch(() => undefined)))
       )
     );
   }

@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { getAdhkar } from "../data/adhkar";
 import { useApp } from "../state/AppContext";
 import ProgressRing from "../components/ProgressRing";
+import { TimeCalendarCard } from "../components/TimeCalendar";
 import { BookIcon, ChevronIcon, FlameIcon, HeartIcon, MoonIcon, SunIcon } from "../components/Icons";
 
 export default function Home() {
@@ -116,6 +117,9 @@ export default function Home() {
           <ChevronIcon width={16} height={16} style={{ color: "var(--text-faint)" }} />
         </Link>
       </div>
+
+      {/* الوقت والتقويم — بطاقة مختصرة تفتح الصفحة الكاملة */}
+      <TimeCalendarCard />
 
       {app.storage.available === false && (
         <p className="badge-review rounded-xl p-3 text-sm font-semibold">

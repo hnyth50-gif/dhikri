@@ -44,6 +44,11 @@ export interface Settings {
   /** تنبيه المساء */
   eveningReminder: boolean;
   eveningTime: string;
+  /* ملاحظة: مفتاح التذكير مسجّل كإشعار متصفح — لا علاقة له بوقت الجهاز */
+  /** تنسيق الساعة في صفحة الوقت والتقويم: 24 أو 12 ساعة */
+  timeFormat: "24" | "12";
+  /** معرّف مدينة (IANA) اختاره المستخدم؛ "" = توقيت الجهاز الحالي */
+  homeCity: string;
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -56,6 +61,8 @@ export const DEFAULT_SETTINGS: Settings = {
   morningTime: "06:00",
   eveningReminder: false,
   eveningTime: "18:00",
+  timeFormat: "24",
+  homeCity: "",
 };
 
 /* ------------------------------------------------------------------ */

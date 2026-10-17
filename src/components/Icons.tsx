@@ -41,6 +41,13 @@ export const MoonIcon = (p: P) => (
   </svg>
 );
 
+export const ClockIcon = (p: P) => (
+  <svg {...base(p)}>
+    <circle cx="12" cy="12" r="8.5" />
+    <path d="M12 7.5V12l3 2" />
+  </svg>
+);
+
 export const SearchIcon = (p: P) => (
   <svg {...base(p)}>
     <circle cx="11" cy="11" r="6.5" />

@@ -17,6 +17,7 @@ import GuidePage from "./pages/GuidePage";
 import PrivacyPage from "./pages/PrivacyPage";
 import ContactPage from "./pages/ContactPage";
 import ChangelogPage from "./pages/ChangelogPage";
+import TimeCalendarPage from "./pages/TimeCalendarPage";
 import NotFound from "./pages/NotFound";
 
 /**
@@ -47,6 +48,7 @@ export default function App() {
               <Route path="privacy" element={<PrivacyPage />} />
               <Route path="contact" element={<ContactPage />} />
               <Route path="changelog" element={<ChangelogPage />} />
+              <Route path="time" element={<TimeCalendarPage />} />
               <Route path="home" element={<Navigate to="/" replace />} />
               {/* أسماء قديمة أو مترددة → أقرب صفحة صحيحة بدل صفحة خطأ */}
               <Route path="index" element={<Navigate to="/adhkar" replace />} />

@@ -21,6 +21,7 @@ export const MORE_GROUPS: MoreGroup[] = [
       { to: "/tasbih", label: "المسبحة الإلكترونية", note: "عدّاد مستقل بهدف اختياري" },
       { to: "/favorites", label: "المفضلة", note: "الأذكار المحفوظة والعودة لموضعها" },
       { to: "/adhkar", label: "فهرس الأذكار", note: "قائمة كل الأذكار مع بحث" },
+      { to: "/time", label: "الوقت والتقويم", note: "التاريخان والساعة وUTC وتوقيت مدينتك" },
     ],
   },
   {
