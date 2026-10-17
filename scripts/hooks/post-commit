@@ -1,0 +1,30 @@
+#!/bin/sh
+# =============================================================================
+# لقطة تلقائية (auto snapshot) عند كل commit
+#
+# يُنشئ وسمًا مُعلقًا (annotated tag) اسمه: snap-auto-<YYYYMMDD-HHMMSS>-<sha7>
+# ورسالته = عنوان الـcommit (شرح التغيير) + التاريخ.
+# النتيجة: لكل تغيير نسخة قابلة للرجوع + تعليق يشرحه وتاريخه، بلا أي إجراء.
+#
+# الأمان: يخرج دائمًا برمز 0 — أي عطل هنا لا يُفشل عملية الحفظ أبدًا.
+# يتجاهل الـcommit الذي تنتجه أداة `npm run snapshot` (تنبيه DHK_SNAPSHOT=1)
+# حتى لا يُنشأ وسمان لنفس الـcommit.
+#
+# للتثبيت بعد استنساخ جديد للمستودع (مرة واحدة):
+#   Copy-Item scripts/hooks/post-commit .git/hooks/post-commit   (PowerShell)
+#   cp scripts/hooks/post-commit .git/hooks/post-commit          (sh)
+# =============================================================================
+[ "${DHK_SNAPSHOT:-}" = "1" ] && exit 0
+
+# تخطّي إن كانت هناك لقطة snap- أخرى على نفس الـcommit بالفعل
+if git tag --points-at HEAD 2>/dev/null | grep -q '^snap-'; then
+  exit 0
+fi
+
+sha=$(git rev-parse --short HEAD 2>/dev/null) || exit 0
+ts=$(date +%Y%m%d-%H%M%S 2>/dev/null) || exit 0
+today=$(date +%F 2>/dev/null) || exit 0
+subject=$(git log -1 --pretty=%s 2>/dev/null) || exit 0
+
+git tag -a "snap-auto-$ts-$sha" -m "$subject" -m "التاريخ: $today" HEAD 2>/dev/null || true
+exit 0

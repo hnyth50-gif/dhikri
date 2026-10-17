@@ -6,3 +6,5 @@ npm-debug.log*
 .vscode/
 .idea/
 Thumbs.db
+# أرشيفات اللقطات (نسخ خارجية عن git — تبقى محفوظة ومُزامَنة عبر OneDrive)
+snapshots/

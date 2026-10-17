@@ -1,11 +1,3 @@
-# توحيد نهايات الأسطر: LF في المستودع (يبني على Linux في GitHub Actions)
-* text=auto eol=lf
-
-# ملفات ثنائية لا تُعدَّل
-*.png binary
-*.jpg binary
-*.webp binary
-*.ico binary
-*.woff binary
-*.woff2 binary
-*.mp3 binary
+# نصوص يجب أن تبقى LF كما هي مهما كان إعداد core.autocrlf،
+# لأن ملف الـhook يُنفَّذ مباشرة بواسطة sh فتحوّل الأسطر يكسره.
+scripts/hooks/post-commit -text
