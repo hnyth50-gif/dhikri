@@ -1,5 +1,5 @@
-date: 2026-10-17T06:50:02.572Z
-passed: 140
+date: 2026-10-17T07:10:35.194Z
+passed: 141
 warnings: 0
 failed: 0
 
@@ -51,6 +51,7 @@ failed: 0
 [PASS] sw.js: مطابقة الصفحات تتجاهل المعلّمات (?q=)
 [PASS] sw.js: المسارات محصورة في نطاق الموقع (لا تخزين للخارج)
 [PASS] sw.js: مسارات الدخول/OAuth مستثناة من رجوع اللبّ (denylist)
+[PASS] sw.js: ينظّف مخازن النسخة اليدوية القديمة (dhikri-v1-*)
 [PASS] sw.js: بلا بروتوكول القديم PRECACHE_ASSETS
 [PASS] sw.js: بلا eval
 [PASS] main.tsx: لا تسجيل في بيئة التطوير (PROD فقط)

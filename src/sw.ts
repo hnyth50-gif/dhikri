@@ -36,7 +36,18 @@ sw.addEventListener("install", () => {
   void sw.skipWaiting();
 });
 sw.addEventListener("activate", (event) => {
-  event.waitUntil(sw.clients.claim());
+  event.waitUntil(
+    Promise.all([
+      sw.clients.claim(),
+      /* تنظيف مخازن النسخة اليدوية السابقة (dhikri-v1-*) التي تركها SW القديم
+         بعد استبداله — لا يعرفها هذا العامل فتبقى مهجورة دون هذه الجملة */
+      caches
+        .keys()
+        .then((keys) =>
+          Promise.all(keys.filter((k) => k.startsWith("dhikri-v1-")).map((k) => caches.delete(k)))
+        ),
+    ])
+  );
 });
 
 /* لبّ التطبيق والملفات بأسماء hashed: تخزين أولًا بمعرّف إصدار (precache) */

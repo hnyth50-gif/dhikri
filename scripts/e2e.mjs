@@ -169,6 +169,7 @@ if (existsSync(swPath)) {
   /* استثناءات: النطاقات الخارجية ومسارات الدخول/OAuth */
   assert(sw.includes("self.location.origin"), "sw.js: المسارات محصورة في نطاق الموقع (لا تخزين للخارج)");
   assert(/auth|oauth|login/.test(sw), "sw.js: مسارات الدخول/OAuth مستثناة من رجوع اللبّ (denylist)");
+  assert(sw.includes("dhikri-v1"), "sw.js: ينظّف مخازن النسخة اليدوية القديمة (dhikri-v1-*)");
   /* حارس التراجع: بروتوكول SW اليدوي القديم اختفى بالكامل */
   assert(!sw.includes("PRECACHE_ASSETS"), "sw.js: بلا بروتوكول القديم PRECACHE_ASSETS");
   assert(!/eval\(/.test(sw), "sw.js: بلا eval");
