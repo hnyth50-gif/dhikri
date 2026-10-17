@@ -40,21 +40,29 @@ export default function InstallPrompt() {
     if (isStandalone()) return; // مثبَّت كتطبيق أصلًا — لا داعي للتنبيه إطلاقًا
 
     let timer = 0;
+    let pending: Variant | null = null;
 
-    const tryShow = (v: Variant) => {
-      if (shownRef.current || !mayShow() || document.visibilityState !== "visible") return;
+    /* نظهر فقط حين يكون التبويب مرئيًا؛ وإن كان مخفيًا عند حلول المهلة
+       ننتظر عودة المستخدم إليه (visibilitychange) — فلا يفوته ولا يفاجئه */
+    const tryShow = () => {
+      if (!pending || shownRef.current || !mayShow() || document.visibilityState !== "visible") return;
       shownRef.current = true;
-      setVariant(v);
+      setVariant(pending);
       setVisible(true);
     };
 
     /* تأخير واحد مشترك: التنبيه يظهر بعد استقرار الصفحة لا في لحظة الوصول */
     const schedule = (v: Variant) => {
+      pending = v;
       if (timer) return;
       timer = window.setTimeout(() => {
         timer = 0;
-        tryShow(v);
+        tryShow();
       }, SHOW_DELAY_MS);
+    };
+
+    const onVisibility = () => {
+      if (document.visibilityState === "visible") tryShow();
     };
 
     const onBeforeInstall = (e: Event) => {
@@ -65,6 +73,7 @@ export default function InstallPrompt() {
     };
 
     window.addEventListener("beforeinstallprompt", onBeforeInstall);
+    document.addEventListener("visibilitychange", onVisibility);
     if (isIosSafari()) {
       document.documentElement.setAttribute("data-install-prompt", "ios");
       schedule("ios");
@@ -72,6 +81,7 @@ export default function InstallPrompt() {
 
     return () => {
       window.removeEventListener("beforeinstallprompt", onBeforeInstall);
+      document.removeEventListener("visibilitychange", onVisibility);
       window.clearTimeout(timer);
     };
   }, []);

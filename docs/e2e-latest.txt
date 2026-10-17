@@ -1,4 +1,4 @@
-date: 2026-10-17T09:05:35.575Z
+date: 2026-10-17T09:13:21.803Z
 passed: 154
 warnings: 0
 failed: 0
@@ -152,7 +152,7 @@ failed: 0
 [PASS] الأصل «./favicon.svg» يستجيب 200
 [PASS] الأصل «./icons/apple-touch-icon-180.png» يستجيب 200
 [PASS] الأصل «./manifest.webmanifest» يستجيب 200
-[PASS] الأصل «./assets/index-N-f32ErG.js» يستجيب 200
+[PASS] الأصل «./assets/index-D4r9-vHv.js» يستجيب 200
 [PASS] الأصل «./assets/vendor-Bf31UOCe.js» يستجيب 200
 [PASS] الأصل «./assets/index-Dvc0KKSu.css» يستجيب 200
 [PASS] sw.js يُقدَّم بحالة 200
