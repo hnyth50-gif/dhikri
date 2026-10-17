@@ -11,7 +11,7 @@
 يُنشئ عند **كل commit** وسمًا مُعلقًا اسمه:
 
 ```
-snap-auto-<YYYYMMDD-HHMMSS-<معرف الـcommit>
+snap-auto-<YYYYMMDD-HHMMSS>-<معرف الـcommit>
 ```
 
 ورسالته = **عنوان الـcommit (أي شرح التغيير) + التاريخ**. فكل تغيير يُحفظ لحظة
