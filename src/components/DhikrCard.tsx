@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { textFor } from "../data/adhkar";
 import type { Dhikr } from "../data/types";
 import { copyToClipboard } from "../lib/clipboard";
+import { AUDIO_CACHE_NAME } from "../lib/audioCache";
 import { useApp } from "../state/AppContext";
 import { useToast } from "./Toast";
 import {
@@ -456,20 +457,48 @@ function SourcePanel({ dhikr }: { dhikr: Dhikr }) {
 
 /**
  * مشغّل صوتي بسيط: تشغيل / إيقاف مؤقت / توقّف.
- * المصدر خارجي (موقع حصن المسلم) — يتطلب اتصالًا بالإنترنت، ويُشرح ذلك للمستخدم.
+ * المصدر خارجي (موقع حصن المسلم) — تُحفَظ التلاوة في أول تشغيل (أو بتنزيلها
+ * من الإعدادات) فتعمل دون اتصال، ويُشرح ذلك للمستخدم في تذييل المشغّل.
  */
 function AudioPlayer({ dhikr, onClose }: { dhikr: Dhikr; onClose: () => void }) {
   const toast = useToast();
   const ref = useRef<HTMLAudioElement | null>(null);
   const [state, setState] = useState<"idle" | "loading" | "playing" | "paused" | "error">("idle");
   const [offline, setOffline] = useState(() => typeof navigator !== "undefined" && !navigator.onLine);
+  /* هل هذه التلاوة محفوظة على الجهاز الآن؟ null = لم يُحسم بعد */
+  const [saved, setSaved] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    let alive = true;
+    const url = dhikr.audio;
+    if (!url || typeof caches === "undefined") {
+      setSaved(false);
+      return;
+    }
+    caches
+      .open(AUDIO_CACHE_NAME)
+      .then((cache) => cache.match(url))
+      .then((hit) => {
+        if (alive) setSaved(!!hit);
+      })
+      .catch(() => {
+        if (alive) setSaved(false);
+      });
+    return () => {
+      alive = false;
+    };
+  }, [dhikr.audio]);
 
   useEffect(() => {
     const audio = new Audio();
     audio.preload = "none";
     ref.current = audio;
 
-    const onPlay = () => setState("playing");
+    const onPlay = () => {
+      setState("playing");
+      /* مسار عامل الخدمة يضعها في الكاش أثناء الجلب — أي إنها صارت محفوظة */
+      setSaved(true);
+    };
     const onPause = () => setState("paused");
     const onWaiting = () => setState("loading");
     const onEnd = () => setState("idle");
@@ -519,7 +548,7 @@ function AudioPlayer({ dhikr, onClose }: { dhikr: Dhikr; onClose: () => void }) 
   return (
     <div className="mt-3 rounded-xl p-3" style={{ background: "var(--surface-2)", border: "1px solid var(--border)" }}>
       <div className="flex flex-wrap items-center gap-2">
-        <button type="button" className="btn btn-primary" onClick={toggle} disabled={offline || state === "error"}>
+        <button type="button" className="btn btn-primary" onClick={toggle} disabled={(offline && !saved) || state === "error"}>
           {state === "playing" ? <PauseIcon width={18} height={18} /> : <PlayIcon width={18} height={18} />}
           {state === "playing" ? "إيقاف مؤقت" : state === "paused" ? "استئناف" : state === "loading" ? "جارٍ التحميل…" : "تشغيل"}
         </button>
@@ -542,17 +571,20 @@ function AudioPlayer({ dhikr, onClose }: { dhikr: Dhikr; onClose: () => void }) 
         </button>
       </div>
 
-      {offline ? (
-        <p className="mt-2 text-xs" style={{ color: "var(--text-faint)" }}>
-          التلاوة تحتاج اتصالًا بالإنترنت — لا تُخزَّن نسخة منها في وضع عدم الاتصال.
-        </p>
-      ) : state === "error" ? (
+      {state === "error" ? (
         <p className="mt-2 text-xs" style={{ color: "#a4372e" }}>
           تعذّر تشغيل التلاوة. تأكد من الاتصال ثم أعد المحاولة.
         </p>
+      ) : offline ? (
+        <p className="mt-2 text-xs" style={{ color: "var(--text-faint)" }}>
+          {saved
+            ? "التلاوة محفوظة على جهازك — تعمل دون اتصال."
+            : "التلاوة تحتاج اتصالًا ولم تُحفظ بعد — نزّلها من الإعدادات لتعمل دون اتصال."}
+        </p>
       ) : (
         <p className="mt-2 text-xs" style={{ color: "var(--text-faint)" }}>
-          تلاوة من موقع <strong>حصن المسلم</strong> الرسمي — تُحمَّل عند الطلب وتحتاج اتصالًا بالإنترنت.
+          تلاوة من موقع <strong>حصن المسلم</strong> الرسمي — تُحفَظ بعد أول تشغيل
+          فتعمل دون اتصال، وكلها قابلة للتنزيل من الإعدادات.
         </p>
       )}
     </div>

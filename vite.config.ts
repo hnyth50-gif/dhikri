@@ -21,9 +21,9 @@ export default defineConfig({
       devOptions: { enabled: false },
       injectManifest: {
         // كل مخرجات البناء تُخبأ مسبقًا: الجافاسكربت والخطوط بأسماء متغيّرة
-        // وأيقونات PWA — فتعمل الصفحة كاملة دون اتصال بعد أول زيارة.
+        // وأيقونات PWA — وmanifest وrobots أيضًا ليبقى كل شيء متاحًا دون اتصال.
         // (تنظيف المخازن القديمة يتم في src/sw.ts عبر cleanupOutdatedCaches())
-        globPatterns: ["**/*.{js,css,html,svg,png,webp,ico,woff,woff2}"],
+        globPatterns: ["**/*.{js,css,html,svg,png,webp,ico,woff,woff2,webmanifest,txt}"],
       },
     }),
   ],

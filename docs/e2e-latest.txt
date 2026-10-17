@@ -1,5 +1,5 @@
-date: 2026-10-17T07:21:54.562Z
-passed: 143
+date: 2026-10-17T08:26:46.802Z
+passed: 149
 warnings: 0
 failed: 0
 
@@ -16,7 +16,7 @@ failed: 0
 [PASS] index.html: تطبيق الثيم قبل أول رسم (منع الوميض)
 [PASS] index.html: لا روابط غير آمنة http://
 [PASS] index.html: المسارات نسبية (تعمل من أي مجلد فرعي)
-[PASS] الحمولة الأولى 112.5 KB ≤ 130 KB (مضغوطة)
+[PASS] الحمولة الأولى 113.7 KB ≤ 130 KB (مضغوطة)
 [PASS] manifest.webmanifest: JSON صالح
 [PASS] المانيفست: الاسم عربي «ذِكري»
 [PASS] المانيفست: الاسم المختصر «ذِكري»
@@ -49,9 +49,13 @@ failed: 0
 [PASS] sw.js: الخطوط العربية مخزّنة مسبقًا (عرضها دون اتصال)
 [PASS] sw.js: كل ملف بمعرّف إصدار (precache revisioned)
 [PASS] sw.js: مطابقة الصفحات تتجاهل المعلّمات (?q=)
-[PASS] sw.js: المسارات محصورة في نطاق الموقع (لا تخزين للخارج)
+[PASS] sw.js: مسارات الموقع محصورة في نطاقه (والخارج الوحيد: مسار التلاوة)
 [PASS] sw.js: مسارات الدخول/OAuth مستثناة من رجوع اللبّ (denylist)
 [PASS] sw.js: ينظّف مخازن النسخة اليدوية القديمة (dhikri-v1-*)
+[PASS] sw.js: manifest التثبيت مخزّن مسبقًا
+[PASS] sw.js: robots.txt مخزّن مسبقًا
+[PASS] sw.js: كاش التلاوات dhikri-audio
+[PASS] sw.js: مسار صريح لتلاوات حصن المسلم (تخزين أولًا)
 [PASS] sw.js: بلا بروتوكول القديم PRECACHE_ASSETS
 [PASS] sw.js: بلا eval
 [PASS] main.tsx: لا تسجيل في بيئة التطوير (PROD فقط)
@@ -62,6 +66,8 @@ failed: 0
 [PASS] src/sw.ts: مسار الصفحات يُسجَّل قبل مسار الـprecache (شبكة أولًا تسبق اللبّ)
 [PASS] src/sw.ts: تعطيل directoryIndex حتى لا يستبق اللبّ التنقل إلى /
 [PASS] الحزمة: حارس hostname موجود في التنفيذ المبني
+[PASS] الحزمة: زر تنزيل التلاوات في الإعدادات
+[PASS] الحزمة: الصفحة تشترك في كاش التلاوات نفسه
 [PASS] الحزمة: تسجيل عامل الخدمة
 [PASS] الحزمة: يسجّل عامل الخدمة بمسار نسبي إلى الصفحة (./sw.js)
 [PASS] الحزمة: لا يبني مسار عامل الخدمة من import.meta.url
@@ -141,7 +147,7 @@ failed: 0
 [PASS] الأصل «./favicon.svg» يستجيب 200
 [PASS] الأصل «./icons/apple-touch-icon-180.png» يستجيب 200
 [PASS] الأصل «./manifest.webmanifest» يستجيب 200
-[PASS] الأصل «./assets/index-Dp4dO6mC.js» يستجيب 200
+[PASS] الأصل «./assets/index-D-XaCt6V.js» يستجيب 200
 [PASS] الأصل «./assets/vendor-Bf31UOCe.js» يستجيب 200
 [PASS] الأصل «./assets/index-DOrvCkDw.css» يستجيب 200
 [PASS] sw.js يُقدَّم بحالة 200

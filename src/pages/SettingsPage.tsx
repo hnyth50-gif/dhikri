@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import { useApp, type FontChoice, type ThemeChoice } from "../state/AppContext";
 import { useToast } from "../components/Toast";
-import { BellIcon, MinusIcon, PlusIcon } from "../components/Icons";
+import { BellIcon, MinusIcon, OfflineIcon, PlusIcon } from "../components/Icons";
 import { requestPermission, permissionState, scheduleReminder, clearReminders } from "../lib/reminders";
 import { probeStorage } from "../lib/storage";
+import { audioUrls, savedAudio, downloadAllAudio, clearDownloadedAudio } from "../lib/audioOffline";
 
 const FONTS: Array<[FontChoice, string, string]> = [
   ["naskh", "نسخ (Amiri)", "خط كلاسيكي مريح للنصوص الطويلة — الافتراضي"],
@@ -18,6 +19,22 @@ export default function SettingsPage() {
   const s = app.settings;
   const [perm, setPerm] = useState<NotificationPermission | "unsupported">("default");
   const [confirmReset, setConfirmReset] = useState(false);
+  const [savedCount, setSavedCount] = useState<number | null>(null);
+  const [audioDl, setAudioDl] = useState<{ done: number; total: number } | null>(null);
+
+  useEffect(() => {
+    let alive = true;
+    savedAudio()
+      .then((list) => {
+        if (alive) setSavedCount(list.length);
+      })
+      .catch(() => {
+        if (alive) setSavedCount(0);
+      });
+    return () => {
+      alive = false;
+    };
+  }, []);
 
   useEffect(() => {
     setPerm(permissionState());
@@ -72,6 +89,40 @@ export default function SettingsPage() {
   };
 
   const storage = probeStorage();
+  const audioTotal = audioUrls().length;
+
+  /** تنزيل كل التلاوات غير المحفوظة — مرة واحدة يختارها المستخدم، مع تقدّم */
+  const startAudioDownload = async () => {
+    if (typeof navigator !== "undefined" && !navigator.onLine) {
+      toast.show("تحتاج اتصالًا بالإنترنت لتنزيل التلاوات", "error");
+      return;
+    }
+    setAudioDl({ done: 0, total: audioTotal });
+    try {
+      const result = await downloadAllAudio((p) => setAudioDl({ done: p.done, total: p.total }));
+      const list = await savedAudio();
+      setSavedCount(list.length);
+      setAudioDl(null);
+      if (result.failed === 0) {
+        toast.show("اكتمل تنزيل التلاوات — تعمل الآن دون اتصال", "success");
+      } else {
+        toast.show(
+          `حُفظت ${result.ok} وتبقّى ${result.failed} — أعد المحاولة لاحقًا`,
+          "error"
+        );
+      }
+    } catch {
+      setAudioDl(null);
+      toast.show("تعذّر تنزيل التلاوات", "error");
+    }
+  };
+
+  /** مسح التلاوات المحفوظة فقط — لا يمسّ التقدّم أو الإعدادات */
+  const clearAudioDownloads = async () => {
+    await clearDownloadedAudio();
+    setSavedCount(0);
+    toast.show("مُسحت التلاوات المحفوظة", "success");
+  };
 
   return (
     <div className="space-y-5">
@@ -205,6 +256,61 @@ export default function SettingsPage() {
           onToggle={(v) => toggleReminder("evening", v)}
           onTime={(v) => changeTime("evening", v)}
         />
+      </Section>
+
+      {/* الاستماع دون اتصال */}
+      <Section title="الاستماع دون اتصال" icon={<OfflineIcon width={18} height={18} />}>
+        <Field
+          label="التلاوات الصوتية"
+          hint="24 تلاوة من موقع حصن المسلم — تُحفظ على هذا الجهاز فقط (≈12MB) ويمكن مسحها في أي وقت. أي تلاوة تشغّلها تُحفَظ تلقائيًا؛ والتنزيل هنا يكفي لتنزيل البقية دفعة واحدة."
+        >
+          <p className="text-sm" style={{ color: "var(--text-soft)" }}>
+            {savedCount === null
+              ? "جارٍ فحص المحفوظ…"
+              : `المحفوظ على هذا الجهاز: ${savedCount} من ${audioTotal}`}
+          </p>
+
+          {audioDl ? (
+            <div className="mt-2">
+              <span
+                className="progress-track block"
+                role="progressbar"
+                aria-valuemin={0}
+                aria-valuemax={audioDl.total}
+                aria-valuenow={audioDl.done}
+                aria-label={`تنزيل التلاوات: ${audioDl.done} من ${audioDl.total}`}
+              >
+                <span
+                  className="progress-fill block"
+                  style={{ width: `${(audioDl.done / audioDl.total) * 100}%` }}
+                />
+              </span>
+              <p className="mt-1.5 text-xs tabular-nums" style={{ color: "var(--text-faint)" }}>
+                تمّ {audioDl.done} من {audioDl.total}
+              </p>
+            </div>
+          ) : (
+            <div className="mt-2 flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={startAudioDownload}
+                disabled={savedCount !== null && savedCount >= audioTotal}
+              >
+                {savedCount !== null && savedCount >= audioTotal
+                  ? "التلاوات منزَّلة كاملة ✓"
+                  : savedCount !== null && savedCount > 0
+                    ? `متابعة التنزيل (${savedCount} من ${audioTotal})`
+                    : `تنزيل كل التلاوات (≈12MB)`}
+              </button>
+              {savedCount !== null && savedCount > 0 && (
+                <button type="button" className="btn btn-ghost" onClick={clearAudioDownloads}>
+                  مسح المحفوظ
+                </button>
+              )}
+            </div>
+          )}
+        </Field>
       </Section>
 
       {/* السجل والبيانات */}

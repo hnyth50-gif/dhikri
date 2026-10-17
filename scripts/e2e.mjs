@@ -166,10 +166,16 @@ if (existsSync(swPath)) {
   assert(sw.includes(".woff2"), "sw.js: الخطوط العربية مخزّنة مسبقًا (عرضها دون اتصال)");
   assert(sw.includes("revision"), "sw.js: كل ملف بمعرّف إصدار (precache revisioned)");
   assert(sw.includes("ignoreSearch"), "sw.js: مطابقة الصفحات تتجاهل المعلّمات (?q=)");
-  /* استثناءات: النطاقات الخارجية ومسارات الدخول/OAuth */
-  assert(sw.includes("self.location.origin"), "sw.js: المسارات محصورة في نطاق الموقع (لا تخزين للخارج)");
+  /* استثناءات: نطاق الموقع وحده المسرَّح (والتلاوة بمسار صريح) + الدخول/OAuth */
+  assert(sw.includes("self.location.origin"), "sw.js: مسارات الموقع محصورة في نطاقه (والخارج الوحيد: مسار التلاوة)");
   assert(/auth|oauth|login/.test(sw), "sw.js: مسارات الدخول/OAuth مستثناة من رجوع اللبّ (denylist)");
   assert(sw.includes("dhikri-v1"), "sw.js: ينظّف مخازن النسخة اليدوية القديمة (dhikri-v1-*)");
+  /* اكتمال التوفر دون اتصال: manifest وrobots ضمن التخزين المسبق */
+  assert(sw.includes("manifest.webmanifest"), "sw.js: manifest التثبيت مخزّن مسبقًا");
+  assert(sw.includes("robots.txt"), "sw.js: robots.txt مخزّن مسبقًا");
+  /* التلاوات: مسار تخزين أولًا مشترك بين العامل وصفحة الإعدادات */
+  assert(sw.includes("dhikri-audio"), "sw.js: كاش التلاوات dhikri-audio");
+  assert(sw.includes("hisnmuslim.com"), "sw.js: مسار صريح لتلاوات حصن المسلم (تخزين أولًا)");
   /* حارس التراجع: بروتوكول SW اليدوي القديم اختفى بالكامل */
   assert(!sw.includes("PRECACHE_ASSETS"), "sw.js: بلا بروتوكول القديم PRECACHE_ASSETS");
   assert(!/eval\(/.test(sw), "sw.js: بلا eval");
@@ -190,6 +196,8 @@ if (existsSync(swPath)) {
   );
   assert(swSrc.includes("directoryIndex: null"), "src/sw.ts: تعطيل directoryIndex حتى لا يستبق اللبّ التنقل إلى /");
   assert(js.includes("localhost"), "الحزمة: حارس hostname موجود في التنفيذ المبني");
+  assert(js.includes("تنزيل التلاوات"), "الحزمة: زر تنزيل التلاوات في الإعدادات");
+  assert(js.includes("dhikri-audio"), "الحزمة: الصفحة تشترك في كاش التلاوات نفسه");
   /* التسجيل اليدوي كما هو: مسار نسبي إلى الصفحة */
   assert(js.includes("serviceWorker"), "الحزمة: تسجيل عامل الخدمة");
   assert(
@@ -524,4 +532,7 @@ writeFileSync(
   "utf8"
 );
 
-process.exit(fails.length === 0 ? 0 : 1);
+/* لا process.exit(): إخراج قسري على Windows يقفل مآخذ undici (keep-alive)
+   وهي في حالة إغلاق فيصطدم بـUV_HANDLE_CLOSING (0xC0000409). تصفية
+   الحلقة نفسها تُغلق المآخذ بإيقاعها ثم تُنهي العملية برمز exitCode. */
+process.exitCode = fails.length === 0 ? 0 : 1;

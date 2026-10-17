@@ -8,8 +8,11 @@
  *    (index.html) المخزَّن مسبقًا فتعمل كل المسارات دون اتصال.
  *  • ملفات البناء بأسماء متغيّرة (assets/*-{hash}.…): تخزين أولًا — تُخبأ عند
  *    التثبيت بمعرّف إصدار (precache) ولا تُطلب من الشبكة إلا لتحديث في الخلفية.
- *  • كل المسارات محصورة في نطاق الموقع نفسه: روابط OAuth والنطاقات الخارجية
- *    لا تُخزَّن ولا تُعالَج من هذا العامل إطلاقًا (لا يوجد مسار مطابق لها).
+ *  • التلاوات الصوتية من www.hisnmuslim.com/audio/ar/*.mp3 وحدها: تخزين أولًا
+ *    في ذاكرة dhikri-audio — تُملأ إما بأول تشغيل أو بتنزيل يدوي من الإعدادات
+ *    (حصن المسلم يسمح CORS). سواها من النطاقات الخارجية لا يزال بلا أي مسار.
+ *  • كل مسارات الموقع محصورة في نطاق الموقع نفسه: روابط OAuth وأي نطاق خارجي
+ *    آخر غير مسرَّح به لا تُخزَّن ولا تُعالَج من هذا العامل إطلاقًا.
  *  • مسارات تسجيل الدخول على الخادم (لو أُضيفت مستقبلًا: /auth/ و/login/
  *    و/oauth/ وcallback/) مستثناة من رجوع اللبّ عبر لوحة denylist — والموقع
  *    الحالي لا يحوي تسجيل دخول أصلًا (كل شيء محفوظ محليًا في المتصفح).
@@ -20,6 +23,7 @@
 import { cleanupOutdatedCaches, matchPrecache, precacheAndRoute } from "workbox-precaching";
 import { registerRoute } from "workbox-routing";
 import { CacheFirst, NetworkFirst } from "workbox-strategies";
+import { AUDIO_CACHE_NAME, isAudioRequest } from "./lib/audioCache";
 
 declare global {
   interface Window {
@@ -91,4 +95,25 @@ precacheAndRoute(self.__WB_MANIFEST, { directoryIndex: null as unknown as string
 registerRoute(
   ({ url }) => url.origin === self.location.origin && url.pathname.includes("/assets/"),
   new CacheFirst({ cacheName: "dhikri-assets" })
+);
+
+/* التلاوات الصوتية (الن الخارجي الوحيد المصرّح به): تخزين أولًا في
+   dhikri-audio. الفقد يُملأ بأول تشغيل أو بتنزيل الإعدادات، والريجوع
+   للشبكة يجلب الملف كاملًا بلا ترويسة Range (استجابة 206 مرفوضة في
+   API التخزين) والحصن المسلم يسمح CORS فتُقرأ الحالة فعليًا ولا يُخزَّن
+   خطأ 404. أي نطاق خارجي آخر لا يزال بلا مسار فلا يُخزَّن. */
+registerRoute(
+  ({ url }) => isAudioRequest(url),
+  async ({ url }) => {
+    const cache = await caches.open(AUDIO_CACHE_NAME);
+    const hit = await cache.match(url.href);
+    if (hit) return hit;
+    try {
+      const res = await fetch(url.href);
+      if (res.ok) await cache.put(url.href, res.clone());
+      return res;
+    } catch {
+      return Response.error();
+    }
+  }
 );
