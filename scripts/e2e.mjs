@@ -71,6 +71,8 @@ assert(html.includes('lang="ar"'), "index.html: lang=ar");
 assert(html.includes('dir="rtl"'), "index.html: dir=rtl");
 assert(html.includes("ذِكري"), "index.html: عنوان «ذِكري» موجود");
 assert(html.includes('rel="manifest"'), "index.html: مرتبط بـ manifest");
+assert((html.match(/rel="manifest"/g) || []).length === 1, "index.html: رابط manifest واحد فقط (لا تكرار)");
+assert(html.includes('rel="apple-touch-icon"'), "index.html: أيقونة آيفون (apple-touch-icon 180)");
 assert(html.includes('name="description"'), "index.html: وصف meta موجود");
 assert(html.includes('name="color-scheme"'), "index.html: يعلن دعم الوضعين light/dark");
 assert(html.includes("prefers-color-scheme"), "index.html: theme-color مزدوج حسب تفضيل النظام");
@@ -109,14 +111,36 @@ try {
 }
 if (manifest) {
   assert(manifest.name?.includes("ذِكري"), "المانيفست: الاسم عربي «ذِكري»");
+  assert(manifest.short_name === "ذِكري", "المانيفست: الاسم المختصر «ذِكري»");
   assert(manifest.lang === "ar" && manifest.dir === "rtl", "المانيفست: lang=ar و dir=rtl");
   assert(manifest.display === "standalone", "المانيفست: display=standalone (تطبيق مستقل)");
+  assert(!!manifest.theme_color && !!manifest.background_color, "المانيفست: لونا السمة والخلفية");
   assert(Array.isArray(manifest.icons) && manifest.icons.length >= 2, "المانيفست: أيقونتان على الأقل");
   assert(manifest.start_url && manifest.scope, "المانيفست: start_url و scope محدّدان");
   for (const icon of manifest.icons ?? []) {
     const p = join(DIST, icon.src.replace("./", ""));
     assert(existsSync(p), `المانيفست: الأيقونة موجودة فعليًا (${icon.src})`);
   }
+  /* أحجام PNG المطلوبة للتثبيت: 192 و512 وmaskable — تُقرأ من رأس ملف IHDR */
+  const pngDims = (p) => {
+    const b = readFileSync(p);
+    if (b.slice(1, 4).toString() !== "PNG") return null;
+    return { w: b.readUInt32BE(16), h: b.readUInt32BE(20) };
+  };
+  const sizes = (manifest.icons ?? []).map((i) => i.sizes);
+  assert(sizes.includes("192x192") && sizes.includes("512x512"), "المانيفست: أيقونتا 192 و512 (شرط قابلية التثبيت)");
+  assert(
+    (manifest.icons ?? []).some((i) => i.purpose === "maskable" && i.sizes === "512x512"),
+    "المانيفست: أيقونة maskable للأندرويد بحجم 512"
+  );
+  const d192 = pngDims(join(DIST, "icons/icon-192.png"));
+  const d512 = pngDims(join(DIST, "icons/icon-512.png"));
+  const dMask = pngDims(join(DIST, "icons/icon-maskable-512.png"));
+  const dApple = pngDims(join(DIST, "icons/apple-touch-icon-180.png"));
+  assert(d192?.w === 192 && d192?.h === 192, "أيقونة PNG: icon-192.png مبعوضة 192×192 فعلًا");
+  assert(d512?.w === 512 && d512?.h === 512, "أيقونة PNG: icon-512.png مبعوضة 512×512 فعلًا");
+  assert(dMask?.w === 512 && dMask?.h === 512, "أيقونة PNG: icon-maskable-512.png مبعوضة 512×512 فعلًا");
+  assert(dApple?.w === 180 && dApple?.h === 180, "أيقونة PNG: apple-touch-icon-180.png مبعوضة 180×180 فعلًا");
 }
 
 /* ---------------------------------------------------------------- */
@@ -124,24 +148,40 @@ if (manifest) {
 /* ---------------------------------------------------------------- */
 
 const swPath = join(DIST, "sw.js");
-assert(existsSync(swPath), "sw.js: موجود في البناء");
+assert(existsSync(swPath), "sw.js: موجود في البناء (يولّده vite-plugin-pwa)");
 if (existsSync(swPath)) {
   const sw = read(swPath);
+  /* معالجات العامل الثلاثة — وجود معالج الطلبات شرط لقابلية التثبيت */
   assert(sw.includes('addEventListener("install"'), "sw.js: معالج تثبيت");
-  assert(sw.includes('addEventListener("activate"'), "sw.js: معالج تفعيل وتنظيف الإصدارات القديمة");
-  assert(sw.includes('addEventListener("fetch"'), "sw.js: معالج طلبات");
-  assert(sw.includes("index.html"), "sw.js: يخزّن index.html ليعمل دون اتصال");
-  assert(/network-first|fetch\(request\)/.test(sw), "sw.js: التنقّل شبكة أولًا حتى لا تُعرض نسخة قديمة");
-  assert(sw.includes("!response.ok"), "sw.js: أخطاء الخادم (502...) تعود للنسخة المخزّنة بدل عرض الخطأ");
-  assert(sw.includes("ignoreSearch"), "sw.js: يطابق الصفحات المخزّنة مع تجاهل المعلّمات (?q=)");
-  assert(sw.includes("ignoreVary"), "sw.js: يتجاهل Vary عند إعادة التحميل حتى لا يفشل المطابق");
-  assert(sw.includes("PRECACHE_ASSETS"), "sw.js: يستقبل قائمة ملفات البناء للتخزين المسبق");
-  assert(
-    /PRECACHE_ASSETS[\s\S]*index\.html/.test(sw),
-    "sw.js: يُحدّث وثيقة الصفحة (index.html) مع كل إبلاغ بالأصول — حتى لا يُشغَّل إصدارًا قديمًا دون اتصال بعد النشر"
-  );
-  assert(sw.includes("url.origin !== self.location.origin"), "sw.js: يتجاهل النطاقات الخارجية");
+  assert(sw.includes('addEventListener("activate"'), "sw.js: معالج تفعيل");
+  assert(sw.includes('addEventListener("fetch"'), "sw.js: معالج طلبات (شرط التثبيت في الكروم)");
+  assert(sw.includes("skipWaiting"), "sw.js: التحديثات تتفعّل فورًا دون انتظار (skipWaiting)");
+  /* الاستراتيجيتان المطلوبتان صراحةً */
+  assert(sw.includes("dhikri-pages"), "sw.js: الشبكة أولًا للصفحات (cache dhikri-pages)");
+  assert(sw.includes("networkTimeoutSeconds"), "sw.js: مهلة شبكة قصيرة ثم الرجوع إلى النسخة المحفوظة");
+  assert(sw.includes("dhikri-assets"), "sw.js: التخزين أولًا لأ hashed (cache dhikri-assets)");
+  assert(sw.includes("assets/"), "sw.js: ملفات البناء بأسماء hashed في التخزين المسبق");
+  /* اكتمال العمل دون اتصال */
+  assert(sw.includes("index.html"), "sw.js: لبّ التطبيق (index.html) مخزّن — كل المسارات تعمل دون اتصال");
+  assert(sw.includes(".woff2"), "sw.js: الخطوط العربية مخزّنة مسبقًا (عرضها دون اتصال)");
+  assert(sw.includes("revision"), "sw.js: كل ملف بمعرّف إصدار (precache revisioned)");
+  assert(sw.includes("ignoreSearch"), "sw.js: مطابقة الصفحات تتجاهل المعلّمات (?q=)");
+  /* استثناءات: النطاقات الخارجية ومسارات الدخول/OAuth */
+  assert(sw.includes("self.location.origin"), "sw.js: المسارات محصورة في نطاق الموقع (لا تخزين للخارج)");
+  assert(/auth|oauth|login/.test(sw), "sw.js: مسارات الدخول/OAuth مستثناة من رجوع اللبّ (denylist)");
+  /* حارس التراجع: بروتوكول SW اليدوي القديم اختفى بالكامل */
+  assert(!sw.includes("PRECACHE_ASSETS"), "sw.js: بلا بروتوكول القديم PRECACHE_ASSETS");
   assert(!/eval\(/.test(sw), "sw.js: بلا eval");
+  /* شروط التسجيل الثلاثة في المصدر: تطوير + معاينة + إطارات */
+  const mainSrc = read(join(ROOT, "src/main.tsx"));
+  const viteCfg = read(join(ROOT, "vite.config.ts"));
+  assert(mainSrc.includes("import.meta.env.PROD"), "main.tsx: لا تسجيل في بيئة التطوير (PROD فقط)");
+  assert(mainSrc.includes("window.self === window.top"), "main.tsx: لا تسجيل داخل إطار (iframe)");
+  assert(mainSrc.includes('"localhost"') && mainSrc.includes('"127.0.0.1"'), "main.tsx: لا تسجيل على localhost (تطوير/معاينة)");
+  assert(viteCfg.includes("injectManifest"), "vite.config.ts: استراتيجية injectManifest (Workbox)");
+  assert(viteCfg.includes("enabled: false"), "vite.config.ts: devOptions معطّل — لا SW في التطوير أصلًا");
+  assert(js.includes("localhost"), "الحزمة: حارس hostname موجود في التنفيذ المبني");
+  /* التسجيل اليدوي كما هو: مسار نسبي إلى الصفحة */
   assert(js.includes("serviceWorker"), "الحزمة: تسجيل عامل الخدمة");
   assert(
     /serviceWorker\.register\(\s*"\.\/sw\.js"/.test(js),
@@ -149,6 +189,8 @@ if (existsSync(swPath)) {
     "الحزمة: مسار تسجيل عامل الخدمة غير صالح — كان يُسجّل من assets/ ويفشل بصمت"
   );
   assert(!/new URL\("sw\.js"/.test(js), "الحزمة: لا يبني مسار عامل الخدمة من import.meta.url");
+  /* لا تسجيل محقون تلقائيًا في HTML — التسجيل في main.tsx المشروط فقط */
+  assert(!html.includes("serviceWorker"), "index.html: لا تسجيل تلقائي محقون في الصفحة");
 }
 
 /* ---------------------------------------------------------------- */

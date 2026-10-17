@@ -1,5 +1,5 @@
-date: 2026-10-17T05:56:03.833Z
-passed: 115
+date: 2026-10-17T06:50:02.572Z
+passed: 140
 warnings: 0
 failed: 0
 
@@ -7,6 +7,8 @@ failed: 0
 [PASS] index.html: dir=rtl
 [PASS] index.html: عنوان «ذِكري» موجود
 [PASS] index.html: مرتبط بـ manifest
+[PASS] index.html: رابط manifest واحد فقط (لا تكرار)
+[PASS] index.html: أيقونة آيفون (apple-touch-icon 180)
 [PASS] index.html: وصف meta موجود
 [PASS] index.html: يعلن دعم الوضعين light/dark
 [PASS] index.html: theme-color مزدوج حسب تفضيل النظام
@@ -14,31 +16,53 @@ failed: 0
 [PASS] index.html: تطبيق الثيم قبل أول رسم (منع الوميض)
 [PASS] index.html: لا روابط غير آمنة http://
 [PASS] index.html: المسارات نسبية (تعمل من أي مجلد فرعي)
-[PASS] الحمولة الأولى 112.7 KB ≤ 130 KB (مضغوطة)
+[PASS] الحمولة الأولى 112.5 KB ≤ 130 KB (مضغوطة)
 [PASS] manifest.webmanifest: JSON صالح
 [PASS] المانيفست: الاسم عربي «ذِكري»
+[PASS] المانيفست: الاسم المختصر «ذِكري»
 [PASS] المانيفست: lang=ar و dir=rtl
 [PASS] المانيفست: display=standalone (تطبيق مستقل)
+[PASS] المانيفست: لونا السمة والخلفية
 [PASS] المانيفست: أيقونتان على الأقل
 [PASS] المانيفست: start_url و scope محدّدان
 [PASS] المانيفست: الأيقونة موجودة فعليًا (./icon.svg)
 [PASS] المانيفست: الأيقونة موجودة فعليًا (./icon-maskable.svg)
-[PASS] sw.js: موجود في البناء
+[PASS] المانيفست: الأيقونة موجودة فعليًا (./icons/icon-192.png)
+[PASS] المانيفست: الأيقونة موجودة فعليًا (./icons/icon-512.png)
+[PASS] المانيفست: الأيقونة موجودة فعليًا (./icons/icon-maskable-512.png)
+[PASS] المانيفست: أيقونتا 192 و512 (شرط قابلية التثبيت)
+[PASS] المانيفست: أيقونة maskable للأندرويد بحجم 512
+[PASS] أيقونة PNG: icon-192.png مبعوضة 192×192 فعلًا
+[PASS] أيقونة PNG: icon-512.png مبعوضة 512×512 فعلًا
+[PASS] أيقونة PNG: icon-maskable-512.png مبعوضة 512×512 فعلًا
+[PASS] أيقونة PNG: apple-touch-icon-180.png مبعوضة 180×180 فعلًا
+[PASS] sw.js: موجود في البناء (يولّده vite-plugin-pwa)
 [PASS] sw.js: معالج تثبيت
-[PASS] sw.js: معالج تفعيل وتنظيف الإصدارات القديمة
-[PASS] sw.js: معالج طلبات
-[PASS] sw.js: يخزّن index.html ليعمل دون اتصال
-[PASS] sw.js: التنقّل شبكة أولًا حتى لا تُعرض نسخة قديمة
-[PASS] sw.js: أخطاء الخادم (502...) تعود للنسخة المخزّنة بدل عرض الخطأ
-[PASS] sw.js: يطابق الصفحات المخزّنة مع تجاهل المعلّمات (?q=)
-[PASS] sw.js: يتجاهل Vary عند إعادة التحميل حتى لا يفشل المطابق
-[PASS] sw.js: يستقبل قائمة ملفات البناء للتخزين المسبق
-[PASS] sw.js: يُحدّث وثيقة الصفحة (index.html) مع كل إبلاغ بالأصول — حتى لا يُشغَّل إصدارًا قديمًا دون اتصال بعد النشر
-[PASS] sw.js: يتجاهل النطاقات الخارجية
+[PASS] sw.js: معالج تفعيل
+[PASS] sw.js: معالج طلبات (شرط التثبيت في الكروم)
+[PASS] sw.js: التحديثات تتفعّل فورًا دون انتظار (skipWaiting)
+[PASS] sw.js: الشبكة أولًا للصفحات (cache dhikri-pages)
+[PASS] sw.js: مهلة شبكة قصيرة ثم الرجوع إلى النسخة المحفوظة
+[PASS] sw.js: التخزين أولًا لأ hashed (cache dhikri-assets)
+[PASS] sw.js: ملفات البناء بأسماء hashed في التخزين المسبق
+[PASS] sw.js: لبّ التطبيق (index.html) مخزّن — كل المسارات تعمل دون اتصال
+[PASS] sw.js: الخطوط العربية مخزّنة مسبقًا (عرضها دون اتصال)
+[PASS] sw.js: كل ملف بمعرّف إصدار (precache revisioned)
+[PASS] sw.js: مطابقة الصفحات تتجاهل المعلّمات (?q=)
+[PASS] sw.js: المسارات محصورة في نطاق الموقع (لا تخزين للخارج)
+[PASS] sw.js: مسارات الدخول/OAuth مستثناة من رجوع اللبّ (denylist)
+[PASS] sw.js: بلا بروتوكول القديم PRECACHE_ASSETS
 [PASS] sw.js: بلا eval
+[PASS] main.tsx: لا تسجيل في بيئة التطوير (PROD فقط)
+[PASS] main.tsx: لا تسجيل داخل إطار (iframe)
+[PASS] main.tsx: لا تسجيل على localhost (تطوير/معاينة)
+[PASS] vite.config.ts: استراتيجية injectManifest (Workbox)
+[PASS] vite.config.ts: devOptions معطّل — لا SW في التطوير أصلًا
+[PASS] الحزمة: حارس hostname موجود في التنفيذ المبني
 [PASS] الحزمة: تسجيل عامل الخدمة
 [PASS] الحزمة: يسجّل عامل الخدمة بمسار نسبي إلى الصفحة (./sw.js)
 [PASS] الحزمة: لا يبني مسار عامل الخدمة من import.meta.url
+[PASS] index.html: لا تسجيل تلقائي محقون في الصفحة
 [PASS] الحزمة: عنوان قسم الصباح («أذكار الصباح») موجود
 [PASS] الحزمة: عنوان قسم المساء («أذكار المساء») موجود
 [PASS] الحزمة: ميزة المفضلة («المفضلة») موجود
@@ -101,7 +125,7 @@ failed: 0
 [PASS] CSS: أسلوب تركيز واضح للوحة المفاتيح
 [PASS] CSS: فئة قراءة للقارئ الشاشي دون إظهارها بصريًا
 [PASS] CSS: تنسيق طباعة منفصل عن الشاشة
-[PASS] كل ملفات dist (72 ملفًا) قابلة للقراءة
+[PASS] كل ملفات dist (76 ملفًا) قابلة للقراءة
 [PASS] أسماء الملفات نظيفة
 [PASS] خادم المعاينة يعمل بالفعل على http://localhost:4173 — أُعيد استخدامه
 [PASS] الصفحة الرئيسية: 200
@@ -112,8 +136,9 @@ failed: 0
 [PASS] عامل الخدمة عبر الخادم: 200
 [PASS] robots.txt: 200
 [PASS] الأصل «./favicon.svg» يستجيب 200
+[PASS] الأصل «./icons/apple-touch-icon-180.png» يستجيب 200
 [PASS] الأصل «./manifest.webmanifest» يستجيب 200
-[PASS] الأصل «./assets/index-CLgTJqT_.js» يستجيب 200
+[PASS] الأصل «./assets/index-Dp4dO6mC.js» يستجيب 200
 [PASS] الأصل «./assets/vendor-Bf31UOCe.js» يستجيب 200
 [PASS] الأصل «./assets/index-DOrvCkDw.css» يستجيب 200
 [PASS] sw.js يُقدَّم بحالة 200
