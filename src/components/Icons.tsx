@@ -182,6 +182,14 @@ export const StopIcon = (p: P) => (
   </svg>
 );
 
+/** تنزيل/تثبيت: سهم نازل إلى صينية مفتوحة */
+export const InstallIcon = (p: P) => (
+  <svg {...base(p)}>
+    <path d="M12 3v10m0 0 3.5-3.5M12 13 8.5 9.5" />
+    <path d="M4 16v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3" />
+  </svg>
+);
+
 export const SparkIcon = (p: P) => (
   <svg {...base(p)}>
     <path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5 18 18M18 6l-2.5 2.5M8.5 15.5 6 18" />

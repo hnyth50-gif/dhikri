@@ -70,7 +70,7 @@ npm.cmd test           # البيانات + البناء + الاختبار ال
 | `npm run test:data` | سلامة ملف بيانات الأذكار وحده | **0 مخالفة في 24 ذكرًا** |
 | `npm run test:data -- --network` | يفتح الروابط فعلًا (يحتاج إنترنت) | روابط التلاوة 24/24 تعمل؛ sunnah.com يحجب البوت بـ 403 فتُسجَّل تنبيهات لا إخفاءً |
 | `npm run build` | فحص الأنواع + بناء الإصدار | ناجح |
-| `npm run test:e2e` | يفحص `dist/` (يطلبها مبنية)، يشغّل خادم المعاينة الحقيقي، ويفحص الحزمة والصفحة وشروط PWA | **149 فحصًا، 0 تنبيهًا، 0 فشل** |
+| `npm run test:e2e` | يفحص `dist/` (يطلبها مبنية)، يشغّل خادم المعاينة الحقيقي، ويفحص الحزمة والصفحة وشروط PWA | **154 فحصًا، 0 تنبيهًا، 0 فشل** |
 | `npm test` | كل ما سبق متسلسلًا | ناجح |
 
 تفاصيل آخر تشغيل تُكتب تلقائيًا في [`docs/e2e-latest.txt`](docs/e2e-latest.txt).
@@ -189,11 +189,13 @@ dhikri/
 │  │  ├─ audioCache.ts        هوية كاش التلاوات dhikri-audio ومطابقة مسارها
 │  │  │                       (مشتركة بين العامل وصفحة الإعدادات)
 │  │  ├─ audioOffline.ts      فحص المحفوظ + تنزيل التلاوات الـ24 بتقدّم ومسح
+│  │  ├─ installPrompt.ts     كشف إمكانية التثبيت (حدث الأصلي/iOS) وحفظ قرار التنبيه
 │  │  ├─ time.ts              تنسيق التاريخين والساعة وUTC والمناطق الزمنية (Intl)
 │  │  └─ reminders.ts         تذكيرات اختيارية عبر Notification API (بإذن صريح فقط)
 │  ├─ data/siteContent.ts     محتوى الصفحات التعريفية (من نحن، الأسئلة، الدليل، الخصوصية…)
-│  ├─ components/             DhikrCard، Layout (شريط تنقل + تذييل)، MoreSheet («المزيد»)،
-│  │                          ContentPage، TimeCalendar (مؤقّت + بطاقة الرئيسية)، Toast…
+│  ├─ components/             DhikrCard، Layout (شريط تنقّل + تذييل)، MoreSheet («المزيد»)،
+│  │                          InstallPrompt (تنبيه التثبيت)، ContentPage، TimeCalendar
+│  │                          (مؤقّت + بطاقة الرئيسية)، Toast…
 │  ├─ pages/                  Home، AdhkarPage، SearchPage، SettingsPage، SourcesPage،
 │  │                          FavoritesPage، WirdPage، TasbihPage، AdhkarIndexPage،
 │  │                          TimeCalendarPage، AboutPage، FaqPage، GuidePage،
@@ -294,6 +296,14 @@ dhikri/
 
 **دون اتصال**
 
+- **تنبيه التثبيت المهذّب** (`src/components/InstallPrompt.tsx` +
+  `src/lib/installPrompt.ts`): ورقة سفلية صغيرة تظهر فقط إن كان التثبيت
+  ممكنًا فعلًا — حدث `beforeinstallprompt` حقيقي (كروم/أندرويد) يستدعي
+  تثبيت المتصفح نفسه، أو Safari على iOS بشرح «إضافة إلى الشاشة الرئيسية».
+  قواعد عدم الإزعاج مطبَّقة لا موعودة: تأخير ‎4 ثوانٍ، إغلاق بزر أو ESC،
+  «لاحقًا» يبعده سبعة أيام، «لا، شكرًا» لا يُعيده، ولا يظهر إطلاقًا في
+  وضع التطبيق المستقل أو متصفح بلا دعم تثبيت. اختيارك يُحفظ محليًا في
+  `dhikri:install-prompt:v1` فقط.
 - عامل الخدمة يُبنى من `src/sw.ts` عبر **vite-plugin-pwa + Workbox**
   (استراتيجية injectManifest) — لا سكربت يدوي ولا بروتوكول رسائل:
   - **الصفحات شبكة أولًا** بمهلة أربع ثوانٍ: تُجلب أحدث نسخة عند توفر الشبكة
@@ -383,13 +393,14 @@ dhikri/
 
 ## التخزين المحلي
 
-كل البيانات في `localStorage` تحت ثلاثة مفاتيح فقط (راجع `src/lib/storage.ts` و`src/state/AppContext.tsx` و`src/pages/TasbihPage.tsx`):
+كل البيانات في `localStorage` تحت أربعة مفاتيح فقط (راجع `src/lib/storage.ts` و`src/state/AppContext.tsx` و`src/pages/TasbihPage.tsx` و`src/lib/installPrompt.ts`):
 
 | المفتاح | المحتوى |
 | --- | --- |
 | `dhikri:progress:v1` | عدّادات اليوم، إنجاز الصباح/المساء، المفضلة، سجلّ الأيام، عدد التكرار مدى الحياة، تاريخ اليوم الحالي |
 | `dhikri:settings:v1` | الثيم، حجم الخط (1–5)، الخط المفضّل، تجاوز الهدف، الاهتزاز، التذكيرات (وقتها وتفضيلها)، نظام الساعة (12/24)، والمدينة المحفوظة في الوقت والتقويم |
 | `dhikri:tasbih:v1` | عدّ المسبحة المستقلة وهدفها الاختياري |
+| `dhikri:install-prompt:v1` | قرارك تجاه تنبيه التثبيت (لاحقًا / لا شكرًا / ثُبِّت) ووقته — حتى لا يُعيد الإزعاج |
 
 ومنفصلًا عن ذلك يطبَّق **الثيم وحجم الخط قبل أول رسم** من سطر صغير داخل `index.html`
 (يقرأهما من `localStorage` مباشرة) فلا يظهر وميض أبيض عند فتح الموقع.

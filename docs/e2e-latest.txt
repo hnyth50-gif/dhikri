@@ -1,5 +1,5 @@
-date: 2026-10-17T08:26:46.802Z
-passed: 149
+date: 2026-10-17T09:05:35.575Z
+passed: 154
 warnings: 0
 failed: 0
 
@@ -16,7 +16,7 @@ failed: 0
 [PASS] index.html: تطبيق الثيم قبل أول رسم (منع الوميض)
 [PASS] index.html: لا روابط غير آمنة http://
 [PASS] index.html: المسارات نسبية (تعمل من أي مجلد فرعي)
-[PASS] الحمولة الأولى 113.7 KB ≤ 130 KB (مضغوطة)
+[PASS] الحمولة الأولى 115.5 KB ≤ 130 KB (مضغوطة)
 [PASS] manifest.webmanifest: JSON صالح
 [PASS] المانيفست: الاسم عربي «ذِكري»
 [PASS] المانيفست: الاسم المختصر «ذِكري»
@@ -68,6 +68,11 @@ failed: 0
 [PASS] الحزمة: حارس hostname موجود في التنفيذ المبني
 [PASS] الحزمة: زر تنزيل التلاوات في الإعدادات
 [PASS] الحزمة: الصفحة تشترك في كاش التلاوات نفسه
+[PASS] الحزمة: مستمع beforeinstallprompt موجود
+[PASS] الحزمة: حارس وضع التطبيق المستقل موجود
+[PASS] الحزمة: مفتاح تخزين اختيار التثبيت موجود
+[PASS] الحزمة: نص تنبيه التثبيت موجود
+[PASS] الحزمة: تعليمات iOS للتثبيت موجودة
 [PASS] الحزمة: تسجيل عامل الخدمة
 [PASS] الحزمة: يسجّل عامل الخدمة بمسار نسبي إلى الصفحة (./sw.js)
 [PASS] الحزمة: لا يبني مسار عامل الخدمة من import.meta.url
@@ -147,8 +152,8 @@ failed: 0
 [PASS] الأصل «./favicon.svg» يستجيب 200
 [PASS] الأصل «./icons/apple-touch-icon-180.png» يستجيب 200
 [PASS] الأصل «./manifest.webmanifest» يستجيب 200
-[PASS] الأصل «./assets/index-D-XaCt6V.js» يستجيب 200
+[PASS] الأصل «./assets/index-N-f32ErG.js» يستجيب 200
 [PASS] الأصل «./assets/vendor-Bf31UOCe.js» يستجيب 200
-[PASS] الأصل «./assets/index-DOrvCkDw.css» يستجيب 200
+[PASS] الأصل «./assets/index-Dvc0KKSu.css» يستجيب 200
 [PASS] sw.js يُقدَّم بحالة 200
 [PASS] sw.js بنوع محتوى javascript

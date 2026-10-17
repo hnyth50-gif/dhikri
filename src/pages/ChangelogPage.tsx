@@ -9,8 +9,9 @@ export default function ChangelogPage() {
       lead="ما أُضيف وأُصلح في الموقع ومتى — دون مبالغة: ما لم يُنفَّذ لا يُكتب هنا."
     >
       <ol className="space-y-4">
-        {CHANGELOG.map((entry) => (
-          <li key={entry.date} className="surface p-4 sm:p-5">
+        {CHANGELOG.map((entry, idx) => (
+          // المفاتيح تحمل الترتيب: عدة إدخالات تحمل التاريخ نفسه (2026-10-17)
+          <li key={`${entry.date}-${idx}`} className="surface p-4 sm:p-5">
             <div className="mb-2 flex flex-wrap items-center gap-2">
               <time
                 dateTime={entry.date}

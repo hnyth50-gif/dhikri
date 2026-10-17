@@ -198,6 +198,12 @@ if (existsSync(swPath)) {
   assert(js.includes("localhost"), "الحزمة: حارس hostname موجود في التنفيذ المبني");
   assert(js.includes("تنزيل التلاوات"), "الحزمة: زر تنزيل التلاوات في الإعدادات");
   assert(js.includes("dhikri-audio"), "الحزمة: الصفحة تشترك في كاش التلاوات نفسه");
+  /* تنبيه التثبيت: الحدث الحقيقي + حارس الاستقلال + التخزين + النصوص */
+  assert(js.includes("beforeinstallprompt"), "الحزمة: مستمع beforeinstallprompt موجود");
+  assert(js.includes("display-mode"), "الحزمة: حارس وضع التطبيق المستقل موجود");
+  assert(js.includes("install-prompt:v1"), "الحزمة: مفتاح تخزين اختيار التثبيت موجود");
+  assert(js.includes("هل تريد تثبيت ذِكري"), "الحزمة: نص تنبيه التثبيت موجود");
+  assert(js.includes("إضافة إلى الشاشة الرئيسية"), "الحزمة: تعليمات iOS للتثبيت موجودة");
   /* التسجيل اليدوي كما هو: مسار نسبي إلى الصفحة */
   assert(js.includes("serviceWorker"), "الحزمة: تسجيل عامل الخدمة");
   assert(

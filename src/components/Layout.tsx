@@ -3,6 +3,7 @@ import { NavLink, Outlet, Link, useLocation, useNavigate } from "react-router-do
 import { useApp } from "../state/AppContext";
 import { BackIcon, HomeIcon, Logo, MenuIcon, MoonIcon, SearchIcon, SettingsIcon, SunIcon } from "./Icons";
 import MoreSheet, { MORE_GROUPS, SECONDARY_PATHS } from "./MoreSheet";
+import InstallPrompt from "./InstallPrompt";
 
 /**
  * الهيكل العام: رأس علوي + محتوى + تذييل + شريط تنقل سفلي.
@@ -137,6 +138,9 @@ export default function Layout() {
       </nav>
 
       <MoreSheet open={moreOpen} onClose={() => setMoreOpen(false)} triggerRef={moreBtnRef} />
+
+      {/* تنبيه التثبيت: يظهر وحده إن كان التثبيت ممكنًا فعلًا — راجع src/lib/installPrompt.ts */}
+      <InstallPrompt />
     </div>
   );
 }
