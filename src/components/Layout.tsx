@@ -1,7 +1,7 @@
 import { useRef, useState } from "react";
-import { NavLink, Outlet, Link, useLocation } from "react-router-dom";
+import { NavLink, Outlet, Link, useLocation, useNavigate } from "react-router-dom";
 import { useApp } from "../state/AppContext";
-import { HomeIcon, Logo, MenuIcon, MoonIcon, SearchIcon, SettingsIcon, SunIcon } from "./Icons";
+import { BackIcon, HomeIcon, Logo, MenuIcon, MoonIcon, SearchIcon, SettingsIcon, SunIcon } from "./Icons";
 import MoreSheet, { MORE_GROUPS, SECONDARY_PATHS } from "./MoreSheet";
 
 /**
@@ -15,7 +15,20 @@ export default function Layout() {
   const [moreOpen, setMoreOpen] = useState(false);
   const moreBtnRef = useRef<HTMLButtonElement>(null);
   const location = useLocation();
+  const navigate = useNavigate();
   const onSecondary = SECONDARY_PATHS.includes(location.pathname);
+
+  /**
+   * زر «رجوع»: يظهر فقط إن كانت هناك صفحة سابقة **داخل الموقع** في هذه الجلسة.
+   * react-router يخزّن موضع الدخول (`idx`) في `history.state`: القيمة 0 هي أول
+   * صفحة فُتحت بها الجلسة (رابط مباشر أو أول دخول)، وما بعدها تنقّل داخلي.
+   * فلو دخل أحدهم على صفحة برابط مباشر بلا تنقل سابق، لا يظهر الزر أصلًا —
+   * حتى لا يُخرج الزر المستخدم من الموقع. ويستمر العمل بعد إعادة تحميل الصفحة
+   * لأن حالة الدخول تبقى محفوظة في جلسة المتصفح.
+   * وهذا أهمّ في وضع التطبيق المثبَّت (PWA) حيث لا يوجد شريط متصفح بزر رجوع.
+   */
+  const historyState = window.history.state as { idx?: number } | null;
+  const canGoBack = typeof historyState?.idx === "number" && historyState.idx > 0;
 
   /**
    * رابط «تخطَّ إلى المحتوى» لا يغيّر العنوان: الموقع يوجّه كل `#` عبر
@@ -77,6 +90,18 @@ export default function Layout() {
           </Link>
         </div>
       </header>
+
+      {canGoBack && (
+        <button
+          type="button"
+          onClick={() => navigate(-1)}
+          aria-label="الرجوع إلى الصفحة السابقة"
+          className="btn btn-ghost mb-2 self-start"
+        >
+          <BackIcon width={16} height={16} />
+          رجوع
+        </button>
+      )}
 
       <main id="main" className="flex-1">
         <Outlet />

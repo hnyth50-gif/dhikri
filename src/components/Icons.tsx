@@ -48,6 +48,14 @@ export const ClockIcon = (p: P) => (
   </svg>
 );
 
+/** سهم «رجوع»: في الاتجاه من اليمين لليسار يكون الرجوع إلى اليمين */
+export const BackIcon = (p: P) => (
+  <svg {...base(p)}>
+    <path d="M4 12h15" />
+    <path d="m12.5 5.5 6.5 6.5-6.5 6.5" />
+  </svg>
+);
+
 export const SearchIcon = (p: P) => (
   <svg {...base(p)}>
     <circle cx="11" cy="11" r="6.5" />

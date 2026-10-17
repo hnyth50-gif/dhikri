@@ -1,5 +1,5 @@
-date: 2026-10-17T04:51:00.145Z
-passed: 113
+date: 2026-10-17T05:15:23.674Z
+passed: 115
 warnings: 0
 failed: 0
 
@@ -14,7 +14,7 @@ failed: 0
 [PASS] index.html: تطبيق الثيم قبل أول رسم (منع الوميض)
 [PASS] index.html: لا روابط غير آمنة http://
 [PASS] index.html: المسارات نسبية (تعمل من أي مجلد فرعي)
-[PASS] الحمولة الأولى 112.3 KB ≤ 130 KB (مضغوطة)
+[PASS] الحمولة الأولى 112.7 KB ≤ 130 KB (مضغوطة)
 [PASS] manifest.webmanifest: JSON صالح
 [PASS] المانيفست: الاسم عربي «ذِكري»
 [PASS] المانيفست: lang=ar و dir=rtl
@@ -74,6 +74,8 @@ failed: 0
 [PASS] الحزمة: نظام 12 ساعة («12 ساعة») موجود
 [PASS] الحزمة: حقل نظام الساعة داخل الإعدادات المحفوظة («timeFormat») موجود
 [PASS] الحزمة: حقل المدينة داخل الإعدادات المحفوظة («homeCity») موجود
+[PASS] الحزمة: زر الرجوع: تسمية الوصولية في كل الصفحات («الرجوع إلى الصفحة السابقة») موجود
+[PASS] الحزمة: سؤال شائع يشرح زر الرجوع وحدوده («كيف أرجع إلى الصفحة السابقة؟») موجود
 [PASS] كل نصوص الأذكار وعناوينها وأعدادها موجودة حرفيًا في الحزمة (91 نصًا من 24 ذكرًا)
 [PASS] لا يوجد api key في الكود المنشور
 [PASS] لا يوجد مفتاح خاص في الكود المنشور
@@ -111,8 +113,8 @@ failed: 0
 [PASS] robots.txt: 200
 [PASS] الأصل «./favicon.svg» يستجيب 200
 [PASS] الأصل «./manifest.webmanifest» يستجيب 200
-[PASS] الأصل «./assets/index-CWK83oRv.js» يستجيب 200
-[PASS] الأصل «./assets/vendor-CYmCy3LQ.js» يستجيب 200
-[PASS] الأصل «./assets/index-DtLO7aC6.css» يستجيب 200
+[PASS] الأصل «./assets/index-CLgTJqT_.js» يستجيب 200
+[PASS] الأصل «./assets/vendor-Bf31UOCe.js» يستجيب 200
+[PASS] الأصل «./assets/index-DOrvCkDw.css» يستجيب 200
 [PASS] sw.js يُقدَّم بحالة 200
 [PASS] sw.js بنوع محتوى javascript
