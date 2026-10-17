@@ -50,14 +50,16 @@ sw.addEventListener("activate", (event) => {
   );
 });
 
-/* لبّ التطبيق والملفات بأسماء hashed: تخزين أولًا بمعرّف إصدار (precache) */
 cleanupOutdatedCaches();
-precacheAndRoute(self.__WB_MANIFEST);
 
-/* مسارات الخادم المستثناة من رجوع اللبّ (دفاعًا عن محتمل مستقبلي — الموقع بلا دخول) */
-const AUTH_DENY = [/^\/auth/, /^\/login/, /^\/oauth/, /^\/callback/];
+/* مسارات الخادم المستثناة من رجوع اللبّ (دفاعًا عن محتمل مستقبلي — الموقع بلا دخول).
+   الأنماط بلا تثبيت بالبداية لتعمل من مجلد فرعي أيضًا (/dhikri/auth مثلاً). */
+const AUTH_DENY = [/\/auth(\/|$)/, /\/login(\/|$)/, /\/oauth(\/|$)/, /\/callback(\/|$)/];
 
-/* الصفحات: شبكة أولًا بمهلة أربع ثوانٍ، ثم النسخة المحفوظة، ثم لبّ التطبيق */
+/* الصفحات: شبكة أولًا بمهلة أربع ثوانٍ، ثم النسخة المحفوظة، ثم لبّ التطبيق.
+   يُسجَّل هذا المسار عمدًا قبل precacheAndRoute: ترتيب التسجيل في Workbox هو
+   الأولوية، ومسار اللبّ وحده يطابق التنقل إلى "/" عبر directoryIndex ويقدّمها
+   من الذاكرة — فلو سُجَّل بعده لصار التطبيق كله تخزين أولًا لا شبكة أولًا. */
 const pages = new NetworkFirst({
   cacheName: "dhikri-pages",
   networkTimeoutSeconds: 4,
@@ -77,6 +79,13 @@ registerRoute(
     }
   }
 );
+
+/* لبّ التطبيق والملفات بأسماء hashed: تخزين أولًا بمعرّف إصدار (precache) —
+   بعد مسار الصفحات و مع directoryIndex: null حتى لا يستبق أي تنقل إلى "/"
+   (استقلالية ثانية عن قاعدة الترتيب أعلاه)، وتظل matchPrecache("index.html")
+   تعمل لأنني أطلبه بالمفتاح المباشر لا عبر تنويعات المسار.
+   null غير مصرّح به في .d.ts مع أن المنفّذة تتعامل معه (الشرط الفضي يعطّله). */
+precacheAndRoute(self.__WB_MANIFEST, { directoryIndex: null as unknown as string });
 
 /* احتياط صريح: أي ملف داخل assets/ لم يدخل الـprecache — تخزين أولًا */
 registerRoute(

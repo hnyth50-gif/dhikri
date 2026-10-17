@@ -1,5 +1,5 @@
-date: 2026-10-17T07:10:35.194Z
-passed: 141
+date: 2026-10-17T07:21:54.562Z
+passed: 143
 warnings: 0
 failed: 0
 
@@ -59,6 +59,8 @@ failed: 0
 [PASS] main.tsx: لا تسجيل على localhost (تطوير/معاينة)
 [PASS] vite.config.ts: استراتيجية injectManifest (Workbox)
 [PASS] vite.config.ts: devOptions معطّل — لا SW في التطوير أصلًا
+[PASS] src/sw.ts: مسار الصفحات يُسجَّل قبل مسار الـprecache (شبكة أولًا تسبق اللبّ)
+[PASS] src/sw.ts: تعطيل directoryIndex حتى لا يستبق اللبّ التنقل إلى /
 [PASS] الحزمة: حارس hostname موجود في التنفيذ المبني
 [PASS] الحزمة: تسجيل عامل الخدمة
 [PASS] الحزمة: يسجّل عامل الخدمة بمسار نسبي إلى الصفحة (./sw.js)

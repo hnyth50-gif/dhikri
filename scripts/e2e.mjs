@@ -181,6 +181,14 @@ if (existsSync(swPath)) {
   assert(mainSrc.includes('"localhost"') && mainSrc.includes('"127.0.0.1"'), "main.tsx: لا تسجيل على localhost (تطوير/معاينة)");
   assert(viteCfg.includes("injectManifest"), "vite.config.ts: استراتيجية injectManifest (Workbox)");
   assert(viteCfg.includes("enabled: false"), "vite.config.ts: devOptions معطّل — لا SW في التطوير أصلًا");
+  /* الخلل الذي كشفه الاختبار الحيّ: مسار اللبّ يطابق "/" عبر directoryIndex،
+     فلو سُجّل بعد مسار الصفحات استبقها وصار التطبيق تخزين أولًا لا شبكة أولًا */
+  const swSrc = read(join(ROOT, "src/sw.ts"));
+  assert(
+    swSrc.indexOf("registerRoute(") < swSrc.indexOf("precacheAndRoute("),
+    "src/sw.ts: مسار الصفحات يُسجَّل قبل مسار الـprecache (شبكة أولًا تسبق اللبّ)"
+  );
+  assert(swSrc.includes("directoryIndex: null"), "src/sw.ts: تعطيل directoryIndex حتى لا يستبق اللبّ التنقل إلى /");
   assert(js.includes("localhost"), "الحزمة: حارس hostname موجود في التنفيذ المبني");
   /* التسجيل اليدوي كما هو: مسار نسبي إلى الصفحة */
   assert(js.includes("serviceWorker"), "الحزمة: تسجيل عامل الخدمة");
