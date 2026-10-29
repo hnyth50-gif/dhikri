@@ -176,6 +176,8 @@ if (existsSync(swPath)) {
   /* التلاوات: مسار تخزين أولًا مشترك بين العامل وصفحة الإعدادات */
   assert(sw.includes("dhikri-audio"), "sw.js: كاش التلاوات dhikri-audio");
   assert(sw.includes("hisnmuslim.com"), "sw.js: مسار صريح لتلاوات حصن المسلم (تخزين أولًا)");
+  assert(sw.includes("cdn.jsdelivr.net"), "sw.js: مسار صريح لـjsDelivr (مكتبة Supabase — تخزين أولًا)");
+  assert(sw.includes("dhikri-cdn"), "sw.js: كاش منفصل dhikri-cdn للـCDN");
   /* حارس التراجع: بروتوكول SW اليدوي القديم اختفى بالكامل */
   assert(!sw.includes("PRECACHE_ASSETS"), "sw.js: بلا بروتوكول القديم PRECACHE_ASSETS");
   assert(!/eval\(/.test(sw), "sw.js: بلا eval");
@@ -343,6 +345,8 @@ const allowed = [
   /github\.com$/,
   // hnyth50-gif.github.io = رابط الموقع نفسه (يُذكر في نص الرسالة المُركَّبة)
   /hnyth50-gif\.github\.io$/,
+  // *.supabase.co = مشروع «ملاحظاتي» الاختياري وحده (مُعلن في الخصوصية والأسئلة)
+  /\.supabase\.co$/,
 ];
 const unexpected = external.filter((u) => !allowed.some((re) => re.test(u.replace(/^https?:\/\//, ""))));
 assert(
@@ -361,6 +365,19 @@ for (const banned of ["XMLHttpRequest", "navigator.sendBeacon", "WebSocket("]) {
 }
 const externalFetch = (js.match(/fetch\(\s*["'`]https?:\/\/[^"'`]+/g) ?? []).length;
 assert(externalFetch === 0, "الحزمة: لا fetch مباشر إلى أي خدمة خارجية");
+
+/* ملاحظاتي + Supabase: وسم CDN، ونصوص الواجهة، واستعلام الجدول، ولا سرّ */
+assert(
+  html.includes("cdn.jsdelivr.net/npm/@supabase/supabase-js"),
+  "index.html: وسم CDN لمكتبة Supabase موجود (كما هو موثّق في README)"
+);
+assert(js.includes("ملاحظاتي"), "الحزمة: صفحة «ملاحظاتي» موجودة");
+assert(js.includes('from("notes")'), "الحزمة: استعلام جدول notes موجود");
+assert(js.includes("أرسل رابط الدخول"), "الحزمة: نموذج الرابط السحري موجود");
+assert(
+  !js.includes("sb_secret") && !html.includes("sb_secret"),
+  "لا مفتاح سري Supabase (sb_secret) في الكود المنشور"
+);
 
 /* ---------------------------------------------------------------- */
 /* 6. CSS — RTL والثيمات والوصولية                                   */

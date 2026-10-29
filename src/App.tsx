@@ -19,6 +19,7 @@ import ContactPage from "./pages/ContactPage";
 import ChangelogPage from "./pages/ChangelogPage";
 import TimeCalendarPage from "./pages/TimeCalendarPage";
 import NotFound from "./pages/NotFound";
+import NotesPage from "./pages/NotesPage";
 
 /**
  * التوجيه عبر HashRouter عن قصد:
@@ -37,6 +38,7 @@ export default function App() {
               <Route path="evening" element={<AdhkarPage section="evening" />} />
               <Route path="search" element={<SearchPage />} />
               <Route path="favorites" element={<FavoritesPage />} />
+              <Route path="notes" element={<NotesPage />} />
               <Route path="wird" element={<WirdPage />} />
               <Route path="tasbih" element={<TasbihPage />} />
               <Route path="adhkar" element={<AdhkarIndexPage />} />

@@ -1,5 +1,5 @@
-date: 2026-10-17T09:13:21.803Z
-passed: 154
+date: 2026-10-29T01:24:22.344Z
+passed: 161
 warnings: 0
 failed: 0
 
@@ -16,7 +16,7 @@ failed: 0
 [PASS] index.html: تطبيق الثيم قبل أول رسم (منع الوميض)
 [PASS] index.html: لا روابط غير آمنة http://
 [PASS] index.html: المسارات نسبية (تعمل من أي مجلد فرعي)
-[PASS] الحمولة الأولى 115.5 KB ≤ 130 KB (مضغوطة)
+[PASS] الحمولة الأولى 121.5 KB ≤ 130 KB (مضغوطة)
 [PASS] manifest.webmanifest: JSON صالح
 [PASS] المانيفست: الاسم عربي «ذِكري»
 [PASS] المانيفست: الاسم المختصر «ذِكري»
@@ -56,6 +56,8 @@ failed: 0
 [PASS] sw.js: robots.txt مخزّن مسبقًا
 [PASS] sw.js: كاش التلاوات dhikri-audio
 [PASS] sw.js: مسار صريح لتلاوات حصن المسلم (تخزين أولًا)
+[PASS] sw.js: مسار صريح لـjsDelivr (مكتبة Supabase — تخزين أولًا)
+[PASS] sw.js: كاش منفصل dhikri-cdn للـCDN
 [PASS] sw.js: بلا بروتوكول القديم PRECACHE_ASSETS
 [PASS] sw.js: بلا eval
 [PASS] main.tsx: لا تسجيل في بيئة التطوير (PROD فقط)
@@ -123,12 +125,17 @@ failed: 0
 [PASS] لا يوجد Google API key في الكود المنشور
 [PASS] الحزمة: بلا eval()
 [PASS] الحزمة: بلا new Function()
-[PASS] الروابط الخارجية محصورة في المصادر المعلنة (6 نطاقًا)
+[PASS] الروابط الخارجية محصورة في المصادر المعلنة (7 نطاقًا)
 [PASS] كل الروابط الخارجية عبر https
 [PASS] الحزمة: بلا XMLHttpRequest
 [PASS] الحزمة: بلا navigator.sendBeacon
 [PASS] الحزمة: بلا WebSocket(
 [PASS] الحزمة: لا fetch مباشر إلى أي خدمة خارجية
+[PASS] index.html: وسم CDN لمكتبة Supabase موجود (كما هو موثّق في README)
+[PASS] الحزمة: صفحة «ملاحظاتي» موجودة
+[PASS] الحزمة: استعلام جدول notes موجود
+[PASS] الحزمة: نموذج الرابط السحري موجود
+[PASS] لا مفتاح سري Supabase (sb_secret) في الكود المنشور
 [PASS] CSS: ثيمات data-theme مطبّقة
 [PASS] CSS: ألوان الوضع الليلي موجودة
 [PASS] CSS: يحترم تقليل الحركة
@@ -152,8 +159,8 @@ failed: 0
 [PASS] الأصل «./favicon.svg» يستجيب 200
 [PASS] الأصل «./icons/apple-touch-icon-180.png» يستجيب 200
 [PASS] الأصل «./manifest.webmanifest» يستجيب 200
-[PASS] الأصل «./assets/index-D4r9-vHv.js» يستجيب 200
+[PASS] الأصل «./assets/index-3XWztryY.js» يستجيب 200
 [PASS] الأصل «./assets/vendor-Bf31UOCe.js» يستجيب 200
-[PASS] الأصل «./assets/index-Dvc0KKSu.css» يستجيب 200
+[PASS] الأصل «./assets/index-8kcEN4Mo.css» يستجيب 200
 [PASS] sw.js يُقدَّم بحالة 200
 [PASS] sw.js بنوع محتوى javascript

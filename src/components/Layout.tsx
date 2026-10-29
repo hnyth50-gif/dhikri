@@ -4,6 +4,7 @@ import { useApp } from "../state/AppContext";
 import { BackIcon, HomeIcon, Logo, MenuIcon, MoonIcon, SearchIcon, SettingsIcon, SunIcon } from "./Icons";
 import MoreSheet, { MORE_GROUPS, SECONDARY_PATHS } from "./MoreSheet";
 import InstallPrompt from "./InstallPrompt";
+import SignInWatcher from "./SignInWatcher";
 
 /**
  * الهيكل العام: رأس علوي + محتوى + تذييل + شريط تنقل سفلي.
@@ -141,6 +142,9 @@ export default function Layout() {
 
       {/* تنبيه التثبيت: يظهر وحده إن كان التثبيت ممكنًا فعلًا — راجع src/lib/installPrompt.ts */}
       <InstallPrompt />
+
+      {/* مراقب الجلسة: يلتقط عودة رابط الدخول ويُعلن تحققها — راجع src/lib/cloudNotes.ts */}
+      <SignInWatcher />
     </div>
   );
 }

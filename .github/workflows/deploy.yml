@@ -40,6 +40,12 @@ jobs:
 
       - name: فحص الأنواع + البناء
         run: npm run build
+        env:
+          # إعدادات «ملاحظاتي» الاختيارية من Repository Secrets (Settings ← Secrets).
+          # بلاها يُبنى الموقع كاملًا عدا تفعيل الميزة — والواجهة تقول ذلك صراحةً.
+          # القيم المحقونة مفاتيح عميل مُصرَّح بها (publishable) لا مفاتيح سرّ.
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
 
       - name: فحص سلامة بيانات الأذكار
         run: npm run test:data
