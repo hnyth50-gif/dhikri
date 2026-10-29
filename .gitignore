@@ -11,7 +11,9 @@ snapshots/
 
 # مفاتيح Supabase — لا تُرفع أبدًا إلى المستودع
 # (المفتاح السري للخادم فقط، ومفاتيح العميل في .env.local محليًا)
+# *.info.txt يغطي كل ملفات مفاتيح المشروعات المنسوخة محليًا (supabase/moallem/…)
 supabase.info.txt
+*.info.txt
 .env
 .env.local
 .env.*.local
