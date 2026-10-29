@@ -178,6 +178,11 @@ if (existsSync(swPath)) {
   assert(sw.includes("hisnmuslim.com"), "sw.js: مسار صريح لتلاوات حصن المسلم (تخزين أولًا)");
   assert(sw.includes("cdn.jsdelivr.net"), "sw.js: مسار صريح لـjsDelivr (مكتبة Supabase — تخزين أولًا)");
   assert(sw.includes("dhikri-cdn"), "sw.js: كاش منفصل dhikri-cdn للـCDN");
+  const cdnSrc = (html.match(/src="(https:\/\/cdn\.jsdelivr\.net[^"]+)"/) ?? [])[1];
+  assert(
+    Boolean(cdnSrc) && sw.includes(cdnSrc),
+    "sw.js: رابط المكتبة مطابق حرفيًا لوسم index.html (لا انحراف إصدار بينهما)"
+  );
   /* حارس التراجع: بروتوكول SW اليدوي القديم اختفى بالكامل */
   assert(!sw.includes("PRECACHE_ASSETS"), "sw.js: بلا بروتوكول القديم PRECACHE_ASSETS");
   assert(!/eval\(/.test(sw), "sw.js: بلا eval");

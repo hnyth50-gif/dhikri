@@ -40,6 +40,13 @@ declare global {
 const sw = self as unknown as ServiceWorkerGlobalScope;
 
 /* تفعيل فوري: يصبح التحديث الجديد فعّالًا في الزيارة التالية بلا انتظار */
+/* رابط مكتبة الدخول — نفسه المكتوب حرفيًا في index.html (فحص e2e يضمان عدم
+   انحراف الإصدار بين الموضعين): يُستعمل هنا لضمان نسخة في dhikri-cdn،
+   لأن طلب وسم الصفحة قد يُخدَم من كاش المتصفح دون أن يمرّ بالعامل (رصدناه
+   في الإنتاج) وقد يُمحى من الكاش لاحقًا فتتعطل «ملاحظاتي» دون اتصال. */
+const CDN_SUPABASE_URL =
+  "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0/dist/umd/supabase.min.js";
+
 sw.addEventListener("install", () => {
   void sw.skipWaiting();
 });
@@ -54,6 +61,20 @@ sw.addEventListener("activate", (event) => {
         .then((keys) =>
           Promise.all(keys.filter((k) => k.startsWith("dhikri-v1-")).map((k) => caches.delete(k)))
         ),
+      /* تهيئة كاش مكتبة الدخول: جلب صامت best-effort عند التفعيل الأول —
+         إن فشل (نادر: بلا شبكة أو محجوب) فلا شيء في الموقع ينتظر المكتبة،
+         والواجهة تعرض حالة صادقة عند الاستخدام. حجمه ‎≈214 KB مرة واحدة
+         ولا يتكرر عند التحديثات (الرابط مثبَّت بالإصدار). */
+      (async () => {
+        try {
+          const cache = await caches.open("dhikri-cdn");
+          if (await cache.match(CDN_SUPABASE_URL)) return;
+          const res = await fetch(CDN_SUPABASE_URL);
+          if (res.ok) await cache.put(CDN_SUPABASE_URL, res);
+        } catch {
+          /* بلا شبكة أو محجوب — يبقى المسار الاستباقي (CacheFirst) للتحقّق لاحقًا */
+        }
+      })(),
     ])
   );
 });

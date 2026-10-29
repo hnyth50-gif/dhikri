@@ -1,5 +1,5 @@
-date: 2026-10-29T01:24:22.344Z
-passed: 161
+date: 2026-10-29T06:20:24.922Z
+passed: 162
 warnings: 0
 failed: 0
 
@@ -58,6 +58,7 @@ failed: 0
 [PASS] sw.js: مسار صريح لتلاوات حصن المسلم (تخزين أولًا)
 [PASS] sw.js: مسار صريح لـjsDelivr (مكتبة Supabase — تخزين أولًا)
 [PASS] sw.js: كاش منفصل dhikri-cdn للـCDN
+[PASS] sw.js: رابط المكتبة مطابق حرفيًا لوسم index.html (لا انحراف إصدار بينهما)
 [PASS] sw.js: بلا بروتوكول القديم PRECACHE_ASSETS
 [PASS] sw.js: بلا eval
 [PASS] main.tsx: لا تسجيل في بيئة التطوير (PROD فقط)
@@ -148,7 +149,7 @@ failed: 0
 [PASS] CSS: تنسيق طباعة منفصل عن الشاشة
 [PASS] كل ملفات dist (76 ملفًا) قابلة للقراءة
 [PASS] أسماء الملفات نظيفة
-[PASS] خادم المعاينة يعمل بالفعل على http://localhost:4173 — أُعيد استخدامه
+[PASS] شُغّل خادم المعاينة الحقيقي على http://localhost:4173
 [PASS] الصفحة الرئيسية: 200
 [PASS] الصفحة الرئيسية: يستجيب بـ dir=rtl
 [PASS] الصفحة الرئيسية: يشغّل وحدة ES
